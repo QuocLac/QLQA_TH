@@ -1,0 +1,86 @@
+﻿@model QLQA_TH.Models.ViewModels.OrderDetailViewModel
+
+<!-- DANH SÁCH MÓN MỚI -->
+@if (Model.CurrentCart != null && Model.CurrentCart.Any())
+{
+    <div class="cart-items-container">
+        @foreach (var item in Model.CurrentCart)
+        {
+            <div class="cart-item">
+                <div style="flex: 1;">
+                    <div class="cart-item-title">@item.TenMon</div>
+                    <div class="cart-item-price">@item.Gia.ToString("N0") ₫</div>
+                </div>
+                <div class="cart-qty-control mx-2">
+                    <button class="btn-qty-mini" onclick="updateCart(@Model.Ban.MaBan, @item.MaMon, -1)"><i class="fa-solid fa-minus"></i></button>
+                    <span class="fw-bold mx-2" style="font-size: 0.9rem;">@item.SoLuong</span>
+                    <button class="btn-qty-mini" onclick="updateCart(@Model.Ban.MaBan, @item.MaMon, 1)"><i class="fa-solid fa-plus"></i></button>
+                </div>
+                <div class="cart-item-total">@item.ThanhTien.ToString("N0")</div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <div class="d-flex flex-column align-items-center justify-content-center flex-grow-1 text-muted" style="min-height: 0; height: 100%;">
+        <img src="/images/empty-cart.png" style="width: 80px; opacity: 0.5; margin-bottom: 15px;" onerror="this.style.display='none'" />
+        <p class="mb-0 fw-bold">Chưa chọn món</p>
+        <small>Vui lòng chọn món từ thực đơn bên trái</small>
+
+        <!-- NÚT HỦY NẾU CÓ MÓN CHỜ -->
+        @if (Model.HoaDon != null && Model.HoaDon.TrangThaiHoaDon == 0 && Model.HoaDon.PhieuDats != null && Model.HoaDon.PhieuDats.Any(p => p.TrangThai == 0))
+        {
+            <div class="mt-4 w-75 px-3">
+                <button onclick="cancelOrder(@Model.HoaDon.MaHD)" class="btn btn-outline-danger w-100 fw-bold py-2" style="border-radius: 8px;">
+                    <i class="fa-solid fa-trash-can me-2"></i> HỦY MÓN CHỜ
+                </button>
+            </div>
+        }
+    </div>
+}
+
+<!-- FOOTER -->
+<div class="cart-footer mt-auto">
+    <div class="cart-total-row">
+        <span>Tạm tính:</span>
+        <span class="total-price">@Model.CartTotal.ToString("N0") ₫</span>
+    </div>
+
+    <div class="d-grid gap-2">
+        <button onclick="placeOrder(@Model.Ban.MaBan)" class="btn btn-success fw-bold py-2 shadow-sm" style="border-radius: 8px;">
+            <i class="fa-solid fa-check-double me-2"></i> GỬI BẾP
+        </button>
+
+        @{
+            bool hasPending = false;
+            if (Model.HoaDon != null && Model.HoaDon.PhieuDats != null)
+            {
+                hasPending = Model.HoaDon.PhieuDats.Any(p => p.TrangThai == 0);
+            }
+        }
+
+        @if (Model.HoaDon != null && Model.HoaDon.TrangThaiHoaDon == 0 && hasPending && Model.CurrentCart.Any())
+        {
+            <button onclick="cancelOrder(@Model.HoaDon.MaHD)" class="btn btn-outline-danger fw-bold py-2" style="border-radius: 8px;">
+                <i class="fa-solid fa-trash-can me-2"></i> HỦY MÓN CHỜ
+            </button>
+        }
+    </div>
+
+    <!-- THÔNG BÁO TRẠNG THÁI -->
+    @if (Model.HoaDon != null && Model.HoaDon.PhieuDats != null)
+    {
+        var activeTotal = Model.HoaDon.PhieuDats
+        .Where(p => p.TrangThai == 1 || p.TrangThai == 2 || p.TrangThai == 4)
+        .SelectMany(p => p.DonHangs).Sum(d => (long)d.SoLuong * d.Gia);
+
+        if (activeTotal > 0)
+        {
+            <div class="alert alert-info mt-3 mb-0 small py-2 text-center rounded-3 border-0 bg-info bg-opacity-10 text-info">
+                <i class="fa-solid fa-utensils me-1"></i>
+                Đã gọi / Đang dùng: <strong>@activeTotal.ToString("N0") ₫</strong>
+            </div>
+        }
+    }
+</div>

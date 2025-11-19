@@ -1,0 +1,92 @@
+﻿@model QLQA_TH.Models.PhieuDat
+
+<div class="p-3">
+    <!-- 1. THÔNG TIN CHUNG -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <p class="text-muted mb-1 small">Mã phiếu</p>
+            <h5 class="fw-bold text-success">#@Model.MaPhieu</h5>
+        </div>
+        <div class="col-md-6 text-end">
+            <p class="text-muted mb-1 small">Thời gian đặt</p>
+            <span class="fw-bold text-dark">@Model.ThoiGianDat.ToString("HH:mm - dd/MM/yyyy")</span>
+        </div>
+    </div>
+
+    <div class="row mb-4 p-3 bg-light rounded-3 mx-0 border">
+        <div class="col-6">
+            <small class="text-muted d-block">Bàn phục vụ</small>
+            <strong class="text-dark"><i class="fa-solid fa-chair me-1"></i> @(Model.HoaDon?.Ban?.TenBan ?? "Mang về")</strong>
+        </div>
+        <div class="col-6 text-end">
+            <small class="text-muted d-block">Trạng thái</small>
+            @if (Model.TrangThai == 0)
+            {
+                <span class="badge bg-warning text-dark">Chờ xác nhận</span>
+            }
+            else if (Model.TrangThai == 1)
+            {
+                <span class="badge bg-primary">Đang làm</span>
+            }
+            else if (Model.TrangThai == 2)
+            {
+                <span class="badge bg-info text-dark">Bếp xong - Chờ bưng</span>
+            }
+            else if (Model.TrangThai == 4)
+            {
+                <span class="badge bg-success">Đã phục vụ khách</span>
+            }
+            else
+            {
+                <span class="badge bg-danger">Đã hủy</span>
+            }
+        </div>
+    </div>
+
+    <!-- 2. DANH SÁCH MÓN -->
+    <h6 class="fw-bold text-success mb-3 border-bottom pb-2">Danh sách món ăn</h6>
+
+    <div class="table-responsive">
+        <table class="table table-borderless align-middle">
+            <thead class="text-muted small border-bottom">
+                <tr>
+                    <th>Tên món</th>
+                    <th class="text-center">SL</th>
+                    <th class="text-end">Đơn giá</th>
+                    <th class="text-end">Thành tiền</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.DonHangs)
+                {
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <img src="@(string.IsNullOrEmpty(item.MonAn.HinhAnh) ? "/images/placeholder.png" : item.MonAn.HinhAnh)"
+                                     style="width: 40px; height: 40px; border-radius: 6px; object-fit: cover; margin-right: 10px;" />
+                                <div>
+                                    <div class="fw-bold text-dark" style="font-size: 0.95rem;">@item.MonAn.TenMon</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="text-center fw-bold">x @item.SoLuong</td>
+                        <td class="text-end text-muted">@item.Gia.ToString("N0")</td>
+                        <td class="text-end fw-bold text-success">@item.ThanhTien.ToString("N0")</td>
+                    </tr>
+                }
+            </tbody>
+            <tfoot class="border-top">
+                <tr>
+                    <td colspan="3" class="text-end pt-3">Tổng cộng:</td>
+                    <td class="text-end fw-bold text-danger fs-5 pt-3">
+                        @Model.DonHangs.Sum(d => d.ThanhTien).ToString("N0") ₫
+                    </td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+
+    <div class="text-end mt-3">
+        <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Đóng</button>
+    </div>
+</div>

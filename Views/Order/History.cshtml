@@ -1,0 +1,158 @@
+﻿@model List<QLQA_TH.Models.PhieuDat>
+
+@{
+    ViewData["Title"] = "Lịch Sử Phiếu Đặt";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<link href="~/css/tableStyle.css" rel="stylesheet" />
+<link href="~/css/searchBarStyle.css" rel="stylesheet" />
+
+<div class="container py-4">
+    <div class="my-4">
+        <h2 class="fw-bold text-dark">Lịch Sử Món Đặt</h2>
+        <p class="text-muted mb-0">Danh sách các phiếu bạn đã tạo: <strong>@User.Identity?.Name</strong></p>
+    </div>
+
+    <!-- BỘ LỌC -->
+    <div class="card border-0 shadow-sm rounded-4 mb-4">
+        <div class="card-body p-3">
+            <form asp-action="History" method="get" class="d-flex flex-wrap align-items-center gap-3">
+
+                <select name="status" class="form-select w-auto" onchange="this.form.submit()">
+                    @foreach (var item in (List<SelectListItem>)ViewBag.StatusList)
+                    {
+                        bool isSelected = ViewData["CurrentStatus"]?.ToString() == item.Value;
+                        <option value="@item.Value" selected="@isSelected">@item.Text</option>
+                    }
+                </select>
+
+                <div class="input-group w-auto">
+                    <span class="input-group-text small bg-white text-muted">Từ ngày:</span>
+                    <input type="date" name="fromDate" value="@ViewData["FromDate"]" class="form-control" onchange="this.form.submit()" />
+                </div>
+
+                <div class="input-group w-auto">
+                    <span class="input-group-text small bg-white text-muted">Đến ngày:</span>
+                    <input type="date" name="toDate" value="@ViewData["ToDate"]" class="form-control" onchange="this.form.submit()" />
+                </div>
+
+                @if (ViewData["CurrentStatus"] != null || ViewData["FromDate"] != null || ViewData["ToDate"] != null)
+                {
+                    <a asp-action="History" class="btn btn-outline-danger btn-sm">
+                        <i class="fa-solid fa-xmark"></i> Reset
+                    </a>
+                }
+            </form>
+        </div>
+    </div>
+
+    <!-- BẢNG DỮ LIỆU -->
+    <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-body p-0">
+            <table class="rounded-table">
+                <thead>
+                    <tr>
+                        <th class="text-center" style="width: 80px;">Mã Phiếu</th>
+                        <th>Thời gian</th>
+                        <th>Bàn</th>
+                        <th class="text-end">Thành tiền</th>
+                        <th class="text-center">Trạng thái</th>
+                        <th class="text-center">Chi tiết</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        (string badgeClass, string statusText) = GetStatusStyle(item.TrangThai);
+
+                        <tr>
+                            <td class="text-center fw-bold text-muted">#@item.MaPhieu</td>
+                            <td>
+                                <div class="d-flex flex-column">
+                                    <span class="fw-bold">@item.ThoiGianDat.ToString("HH:mm")</span>
+                                    <span class="small text-muted">@item.ThoiGianDat.ToString("dd/MM")</span>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge bg-light text-dark border px-2">
+                                    @(item.HoaDon?.Ban?.TenBan ?? "Mang về")
+                                </span>
+                            </td>
+                            <td class="text-end fw-bold text-dark">
+                                @item.DonHangs.Sum(d => d.ThanhTien).ToString("N0") ₫
+                            </td>
+                            <td class="text-center">
+                                <span class="badge @badgeClass rounded-pill px-3 py-2">@statusText</span>
+                            </td>
+                            <td class="text-center">
+                                <button onclick="showDetail(@item.MaPhieu)" class="btn btn-sm btn-light text-primary border rounded-circle" style="width: 35px; height: 35px;">
+                                    <i class="fa-solid fa-eye"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+            @if (!Model.Any())
+            {
+                <div class="text-center py-5">
+                    <i class="fa-solid fa-box-open fs-1 text-muted mb-3"></i>
+                    <p class="text-muted">Không tìm thấy phiếu đặt nào.</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Modal Container -->
+<div class="modal fade" id="detailModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow-lg">
+            <div class="modal-header bg-success text-white rounded-top-4">
+                <h5 class="modal-title fw-bold"><i class="fa-solid fa-receipt me-2"></i>Chi Tiết Phiếu Đặt</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0" id="modalDetailBody">
+                <!-- Nội dung AJAX -->
+            </div>
+        </div>
+    </div>
+</div>
+
+@functions {
+    public (string badgeClass, string statusText) GetStatusStyle(int status)
+    {
+        return status switch
+        {
+            0 => ("bg-warning text-dark", "Chờ xác nhận"),
+            1 => ("bg-primary", "Đang chế biến"),
+            2 => ("bg-info text-dark", "Bếp xong"),
+            3 => ("bg-danger", "Đã hủy"),
+            4 => ("bg-success", "Đã phục vụ"),
+            _ => ("bg-secondary", "Không xác định")
+        };
+    }
+}
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        function showDetail(maPhieu) {
+            var myModal = new bootstrap.Modal(document.getElementById('detailModal'));
+            myModal.show();
+
+            $.ajax({
+                url: '/Order/GetOrderDetails',
+                type: 'GET',
+                data: { maPhieu: maPhieu },
+                success: function (res) {
+                    $('#modalDetailBody').html(res);
+                },
+                error: function () {
+                    $('#modalDetailBody').html('<p class="text-danger text-center py-4">Lỗi tải dữ liệu!</p>');
+                }
+            });
+        }
+    </script>
+}

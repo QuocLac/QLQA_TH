@@ -1,0 +1,63 @@
+﻿@model QLQA_TH.Areas.Admin.Models.CreateAccountViewModel
+
+@{
+    ViewData["Title"] = "Cấp Tài Khoản";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="container px-4 mt-5" style="max-width: 600px;">
+    <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+        <div class="card-header bg-success text-white p-4 text-center">
+            <h3 class="fw-bold mb-0"><i class="fa-solid fa-user-shield me-2"></i>Cấp Tài Khoản Hệ Thống</h3>
+            <p class="mb-0 mt-2 opacity-75">Cho nhân viên: <strong>@Model.HoTenNhanVien</strong></p>
+        </div>
+
+        <div class="card-body p-5">
+            <form asp-action="CreateAccount" method="post">
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                <input type="hidden" asp-for="MaNV" />
+                <input type="hidden" asp-for="HoTenNhanVien" />
+
+                <div class="mb-4">
+                    <label asp-for="TenTK" class="form-label fw-bold text-success">Tên đăng nhập</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light"><i class="fa-solid fa-user"></i></span>
+                        <input asp-for="TenTK" class="form-control form-control-lg" placeholder="VD: nv_an..." />
+                    </div>
+                    <span asp-validation-for="TenTK" class="text-danger"></span>
+                </div>
+
+                <div class="mb-4">
+                    <label asp-for="MatKhau" class="form-label fw-bold text-success">Mật khẩu khởi tạo</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light"><i class="fa-solid fa-key"></i></span>
+                        <input asp-for="MatKhau" class="form-control form-control-lg" placeholder="VD: Pass123..." />
+                    </div>
+                    <div class="form-text text-muted small">Mật khẩu tối thiểu 6 ký tự, bao gồm chữ hoa, thường, số và ký tự đặc biệt.</div>
+                    <span asp-validation-for="MatKhau" class="text-danger"></span>
+                </div>
+
+                <div class="mb-4">
+                    <label asp-for="VaiTro" class="form-label fw-bold text-success">Phân quyền</label>
+                    <select asp-for="VaiTro" class="form-select form-select-lg" asp-items="ViewBag.ListRole">
+                        <option disabled selected>-- Chọn vai trò --</option>
+                    </select>
+                    <span asp-validation-for="VaiTro" class="text-danger"></span>
+                </div>
+
+                <div class="d-grid gap-2 mt-5">
+                    <button type="submit" class="btn btn-success btn-lg fw-bold shadow-sm">
+                        <i class="fa-solid fa-check-circle me-2"></i> Xác nhận cấp tài khoản
+                    </button>
+                    <a asp-action="Index" class="btn btn-light btn-lg text-muted">Hủy bỏ</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("~/Views/Shared/_ValidationScriptsPartial.cshtml");
+    }
+}

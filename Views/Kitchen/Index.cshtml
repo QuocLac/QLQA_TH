@@ -1,0 +1,114 @@
+﻿@model List<QLQA_TH.Models.PhieuDat>
+
+@{
+    ViewData["Title"] = "Bếp - Danh Sách Chờ";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<link href="~/css/kitchenStyle.css" rel="stylesheet" />
+
+<div class="kitchen-container">
+    <div class="kitchen-header">
+        <div>
+            <h2 class="fw-bold text-dark mb-0"><i class="fa-solid fa-fire-burner me-2 text-danger"></i>NHÀ BẾP</h2>
+            <p class="text-muted mb-0">Vui lòng chọn phiếu để bắt đầu chế biến.</p>
+        </div>
+
+        <div class="kitchen-stats">
+            <div class="stat-badge stat-pending">
+                <i class="fa-regular fa-clock"></i>
+                <span>Chờ xử lý: <strong>@Model.Count</strong></span>
+            </div>
+            <!-- Nút refresh -->
+            <a href="javascript:void(0)" onclick="location.reload()" class="btn btn-light border rounded-circle shadow-sm">
+                <i class="fa-solid fa-rotate"></i>
+            </a>
+        </div>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="d-flex flex-column align-items-center justify-content-center py-5 text-muted">
+            <i class="fa-solid fa-mug-hot fs-1 mb-3 opacity-25"></i>
+            <h4>Hiện tại không có đơn mới!</h4>
+            <p>Bếp có thể nghỉ ngơi.</p>
+        </div>
+    }
+    else
+    {
+        <div class="ticket-grid">
+            @foreach (var item in Model)
+            {
+                // Tính thời gian chờ
+                var waitTime = Math.Round((DateTime.Now - item.ThoiGianDat).TotalMinutes);
+                string timeClass = waitTime > 15 ? "text-danger fw-bold" : "";
+
+                <div class="ticket-card">
+                    <!-- Header màu cam (Pending) -->
+                    <div class="ticket-header header-pending">
+                        <div class="ticket-table">
+                            @(item.HoaDon?.Ban?.TenBan ?? "Mang về")
+                            <div style="font-size: 0.75rem; font-weight: normal; opacity: 0.9;">Phiếu #@item.MaPhieu</div>
+                        </div>
+                        <div class="ticket-time text-end">
+                            <div class="@timeClass"><i class="fa-regular fa-hourglass-half me-1"></i> @waitTime phút</div>
+                            <div style="font-size: 0.75rem; opacity: 0.8;">@item.ThoiGianDat.ToString("HH:mm")</div>
+                        </div>
+                    </div>
+
+                    <div class="ticket-body">
+                        @foreach (var detail in item.DonHangs)
+                        {
+                            <div class="order-item">
+                                <div class="item-qty">@detail.SoLuong</div>
+                                <div class="item-name">@detail.MonAn.TenMon</div>
+                            </div>
+                        }
+                    </div>
+
+                    <div class="ticket-footer">
+                        <button onclick="confirmStart(@item.MaPhieu)" class="btn-kitchen-action btn-start">
+                            <i class="fa-solid fa-fire"></i> NHẬN LÀM
+                        </button>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        // Auto reload mỗi 15s để cập nhật đơn mới
+        setInterval(function() { location.reload(); }, 15000);
+
+        function confirmStart(maPhieu) {
+            Swal.fire({
+                title: 'BẮT ĐẦU CHẾ BIẾN?',
+                text: "Bạn sẽ chuyển sang chế độ tập trung. Bắt buộc phải hoàn thành đơn này mới được nhận đơn khác!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ff9800',
+                confirmButtonText: 'Xác nhận làm',
+                cancelButtonText: 'Hủy'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: '/Kitchen/StartCooking',
+                        type: 'POST',
+                        data: { maPhieu: maPhieu },
+                        success: function (res) {
+                            if (res.success) {
+                                // Chuyển hướng sang trang CookingDetail
+                                window.location.href = '/Kitchen/CookingDetail?id=' + maPhieu;
+                            } else {
+                                Swal.fire('Lỗi', res.msg, 'error');
+                            }
+                        }
+                    });
+                }
+            });
+        }
+    </script>
+}

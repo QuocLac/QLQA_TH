@@ -1,0 +1,145 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Nhân Viên QLQA</title>
+    
+    <!-- 1. Tái sử dụng các thư viện và CSS của Admin để đồng bộ giao diện -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="~/css/admin-master.css" /> <!-- Dùng chung CSS với Admin -->
+</head>
+<body>
+    <!-- HEADER -->
+    <header>
+        <div class="header-left">
+            <img src="~/images/Logo.png" alt="Logo App" style="height: 40px; width: auto; object-fit: contain;" />
+            <span class="ms-2 text-uppercase">NHÀ TÔI
+            </span>
+        </div>
+        
+        <div class="header-right">
+            <!-- Chỉ hiện Search cho Thu ngân/Phục vụ -->
+            @if (!User.HasClaim(c => c.Type == "VaiTro" && c.Value == "3"))
+            {
+                <div class="header-search">
+                    <input type="text" placeholder="Tìm món, bàn ăn..." />
+                </div>
+            }
+            else
+            {
+                <div class="header-search"></div> <!-- Giữ chỗ layout -->
+            }
+            
+            <div class="header-icons">
+                <i class="fa-regular fa-bell" title="Thông báo"></i>
+                
+                <div class="dropdown">
+                    <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle" data-bs-toggle="dropdown">
+                        <span class="me-2 text-dark fw-bold">@User.FindFirst("FullName")?.Value</span>
+                        <div style="width: 35px; height: 35px; background: #2E7D32; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                            <img src="@(string.IsNullOrEmpty(User.FindFirst("HinhAnh")?.Value) ? "/images/avatar-default.png" : User.FindFirst("HinhAnh")?.Value)" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover;" />
+                        </div>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li>
+                            <a class="dropdown-item" asp-controller="Account" asp-action="Profile">
+                                <i class="fa-regular fa-id-card me-2"></i> Hồ sơ cá nhân
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <a class="dropdown-item text-danger" asp-controller="Account" asp-action="Logout">
+                                <i class="fa-solid fa-right-from-bracket me-2"></i> Đăng xuất
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTAINER -->
+    <div class="main-container">
+        <!-- SIDEBAR PHÂN QUYỀN -->
+        <nav class="sidebar">
+            <div class="nav flex-column">
+                
+                <!-- 1. MỤC CHUNG CHO TẤT CẢ (TỔNG QUAN) -->
+                <small class="text-uppercase text-muted fw-bold mb-2 px-2" style="font-size: 0.75rem;">Chung</small>
+                <a href="@Url.Action("Index", "Home")" class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "Home" ? "active" : "")">
+                    <i class="fa-solid fa-chart-pie"></i> Tổng quan
+                </a>
+
+                <!-- ================================================== -->
+                <!-- 2. NHÓM CHỨC NĂNG PHỤC VỤ & THU NGÂN (Role 1, 2) -->
+                <!-- ================================================== -->
+                @if (User.HasClaim(c => c.Type == "VaiTro" && (c.Value == "1" || c.Value == "2")))
+                {
+                    <small class="text-uppercase text-muted fw-bold mb-2 mt-3 px-2" style="font-size: 0.75rem;">Gọi món</small>
+                    
+                    <!-- Đặt món (Chọn bàn -> Chọn món) -->
+                    <a href="@Url.Action("Index", "Order")"> 
+                        <i class="fa-solid fa-utensils"></i> Đặt món tại bàn
+                    </a>
+                    
+                    <!-- Xem lịch sử món đặt -->
+                    <a href="@Url.Action("History", "Order")">
+                        <i class="fa-solid fa-clock-rotate-left"></i> Lịch sử món
+                    </a>
+                }
+
+                <!-- ================================================== -->
+                <!-- 3. NHÓM CHỨC NĂNG RIÊNG THU NGÂN (Role 2) -->
+                <!-- ================================================== -->
+                @if (User.HasClaim(c => c.Type == "VaiTro" && c.Value == "2"))
+                {
+                    <small class="text-uppercase text-muted fw-bold mb-2 mt-3 px-2" style="font-size: 0.75rem;">Thanh toán</small>
+                    
+                    <!-- Hóa đơn -->
+                    <a href="@Url.Action("Index", "Invoice")">
+                        <i class="fa-solid fa-file-invoice-dollar"></i> Hóa đơn
+                    </a>
+                    
+                    <!-- Đặt bàn (Booking) -->
+                    <a href="@Url.Action("Index", "Booking")">
+                        <i class="fa-regular fa-calendar-check"></i> Đặt lịch bàn
+                    </a>
+                }
+
+                <!-- ================================================== -->
+                <!-- 4. NHÓM CHỨC NĂNG BẾP (Role 3) -->
+                <!-- ================================================== -->
+                @if (User.HasClaim(c => c.Type == "VaiTro" && c.Value == "3"))
+                {
+                    <small class="text-uppercase text-muted fw-bold mb-2 mt-3 px-2" style="font-size: 0.75rem;">Nhà bếp</small>
+                    
+                    <!-- Đơn món cần làm (Queue) -->
+                    <a href="@Url.Action("Index", "Kitchen")">
+                        <i class="fa-solid fa-fire-burner"></i> Chế biến món
+                    </a>
+                    
+                    <!-- Lịch sử món đã làm -->
+                    <a href="@Url.Action("History", "Kitchen")">
+                        <i class="fa-solid fa-clipboard-check"></i> Lịch sử hoàn thành
+                    </a>
+                }
+
+            </div>
+        </nav>
+
+        <!-- CONTENT -->
+        <main class="content">
+            @RenderBody()
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

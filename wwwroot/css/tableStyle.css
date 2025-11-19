@@ -1,0 +1,72 @@
+﻿.rounded-table {
+    border-radius: 24px;
+    overflow: hidden; /* BẮT BUỘC: Để bo góc hoạt động */
+    border: 1px solid #CACACA; /* Viền ngoài */
+    border-collapse: separate; /* BẮT BUỘC */
+    border-spacing: 0;
+    width: 100%;
+    /* QUAN TRỌNG: Đặt màu nền mặc định là trắng
+       Điều này ngăn Bootstrap tự động thêm màu xen kẽ (striped)
+     */
+    background-color: #fff;
+}
+
+    /* === Header (<th>) === */
+    .rounded-table thead th {
+        background-color: #f8f9fa; /* Màu nền xám nhạt cho header */
+        font-weight: 600;
+        border: none; /* Bỏ hết viền */
+        border-bottom: 2px solid #CACACA; /* Chỉ giữ viền dưới */
+        padding: 22px 8px;
+        vertical-align: middle;
+        text-align: center; /* Sửa lỗi không căn giữa */
+        white-space: nowrap;
+    }
+
+    /* === Body (<td>) === */
+    .rounded-table tbody td {
+        border: none; /* Bỏ hết viền */
+        padding: 22px 8px;
+        vertical-align: middle;
+        text-align: center; /* Sửa lỗi không căn giữa */
+        /* Mặc định, các ô <td> phải TRONG SUỐT */
+        background-color: transparent;
+        color: #333;
+    }
+
+    /* === Đường kẻ ngăn cách === */
+    .rounded-table tbody tr:not(:first-child) td {
+        /* Chỉ thêm viền TOP cho các hàng KHÔNG phải hàng đầu tiên */
+        border-top: 1px solid #CACACA;
+    }
+
+/* === ĐÃ BỎ HIỆU ỨNG HOVER === */
+/* .rounded-table tbody tr:hover td {
+        background-color: #f1f8e9; 
+        cursor: pointer;
+    } 
+    */
+
+/* === TRANG THAI (Badge) === */
+.badge-status {
+    padding: 8px 12px;
+    border-radius: 20px;
+    font-weight: 500;
+    font-size: 0.85rem;
+}
+
+.status-free {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+}
+/* Trống */
+.status-occupied {
+    background-color: #ffebee;
+    color: #c62828;
+}
+/* Có khách */
+.status-booked {
+    background-color: #fff3e0;
+    color: #ef6c00;
+}
+/* Đã đặt */

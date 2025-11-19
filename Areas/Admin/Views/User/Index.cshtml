@@ -1,0 +1,133 @@
+﻿@model IEnumerable<QLQA_TH.Models.NhanVien>
+
+@{
+    ViewData["Title"] = "Quản Lý Nhân Viên";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<link href="~/css/searchBarStyle.css" rel="stylesheet" />
+<link href="~/css/userStyle.css" rel="stylesheet" />
+
+<div class="container-fluid px-4">
+    <div class="my-4">
+        <h2 class="fw-bold text-success">Quản Lý Nhân Sự</h2>
+        <p class="text-muted mb-0">Quản lý thông tin nhân viên và cấp tài khoản hệ thống.</p>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mb-4 bg-white p-3 rounded-3 shadow-sm border">
+        <form asp-action="Index" method="get" class="d-flex flex-grow-1" style="max-width: 400px;">
+            <div class="custom-search-bar w-100">
+                <input type="text" name="searchString" value="@ViewData["CurrentFilter"]" placeholder="Tìm theo tên hoặc SĐT..." />
+                <button type="submit" class="px-3"><i class="fa-solid fa-magnifying-glass"></i></button>
+            </div>
+        </form>
+
+        <div class="ms-3">
+            <a asp-action="Upsert" class="btn btn-success shadow-sm px-4 fw-bold text-decoration-none">
+                <i class="fa-solid fa-user-plus me-2"></i> Thêm Nhân Viên
+            </a>
+        </div>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="text-center py-5 border rounded-3 bg-white shadow-sm">
+            <i class="fa-solid fa-users-slash fs-1 text-muted mb-3"></i>
+            <p class="text-muted">Không tìm thấy nhân viên nào.</p>
+        </div>
+    }
+    else
+    {
+        <div class="user-grid">
+            @foreach (var item in Model)
+            {
+                <div class="user-card">
+                    <div class="user-header">
+                        <div class="user-avatar">
+                            <img src="@(string.IsNullOrEmpty(item.HinhAnh) ? "/images/avatar-default.png" : item.HinhAnh)" alt="@item.HoTen">
+                        </div>
+
+                        @if (item.TaiKhoan != null)
+                        {
+                            <span class="user-role-badge bg-success bg-opacity-75">
+                                <i class="fa-solid fa-circle-check me-1"></i> Đã có TK
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="user-role-badge bg-warning text-dark bg-opacity-75">
+                                <i class="fa-solid fa-triangle-exclamation me-1"></i> Chưa có TK
+                            </span>
+                        }
+                    </div>
+
+                    <div class="user-body">
+                        <h3 class="user-name">@item.HoTen</h3>
+                        <span class="user-position">@item.ChucVu</span>
+
+                        <div class="user-info-row">
+                            <i class="fa-solid fa-phone"></i> @(item.SDT ?? "---")
+                        </div>
+                        <div class="user-info-row">
+                            <i class="fa-solid fa-envelope"></i> @(item.Email ?? "---")
+                        </div>
+                        <div class="user-info-row">
+                            <i class="fa-solid fa-venus-mars"></i> @(item.GioiTinh ? "Nam" : "Nữ")
+                        </div>
+                    </div>
+
+                    <div class="user-footer">
+                        <!-- Nút Sửa thông tin -->
+                        <a asp-action="Upsert" asp-route-id="@item.MaNV" class="btn-user-action btn-edit">
+                            <i class="fa-solid fa-pen"></i> Sửa
+                        </a>
+
+                        <!-- LOGIC QUAN TRỌNG: Chỉ hiện nút Cấp TK nếu chưa có -->
+                        @if (item.TaiKhoan == null)
+                        {
+                            <a asp-action="CreateAccount" asp-route-maNV="@item.MaNV" class="btn-user-action btn-create-acc">
+                                <i class="fa-solid fa-key"></i> Cấp TK
+                            </a>
+                        }
+
+                        <button onclick="deleteUser(@item.MaNV)" class="btn-user-action btn-delete">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        function deleteUser(id) {
+            Swal.fire({
+                title: 'Xóa nhân viên này?',
+                text: "Tài khoản liên kết (nếu có) cũng sẽ bị xóa!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                confirmButtonText: 'Xóa ngay!',
+                cancelButtonText: 'Hủy'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: '/Admin/User/Delete',
+                        type: 'POST',
+                        data: { id: id },
+                        success: function (data) {
+                            if (data.success) {
+                                Swal.fire('Đã xóa!', 'Thành công.', 'success').then(() => location.reload());
+                            } else {
+                                Swal.fire('Lỗi!', data.message, 'error');
+                            }
+                        }
+                    });
+                }
+            })
+        }
+    </script>
+}

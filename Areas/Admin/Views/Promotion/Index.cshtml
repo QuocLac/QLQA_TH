@@ -1,0 +1,168 @@
+﻿@model IEnumerable<QLQA_TH.Models.KhuyenMai>
+
+@{
+    ViewData["Title"] = "Quản Lý Khuyến Mãi";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<link href="~/css/tableStyle.css" rel="stylesheet" />
+<link href="~/css/searchBarStyle.css" rel="stylesheet" />
+
+<div class="container-fluid px-4">
+    <!-- Tiêu đề -->
+    <div class="my-4">
+        <h2 class="fw-bold text-success">Quản Lý Khuyến Mãi</h2>
+        <p class="text-muted mb-0">Quản lý các chương trình giảm giá và voucher.</p>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="d-flex justify-content-between align-items-center mb-4 bg-white p-3 rounded-3 shadow-sm border">
+        <form asp-action="Index" method="get" class="d-flex flex-grow-1" style="max-width: 400px;">
+            <div class="custom-search-bar w-100">
+                <input type="text" name="searchString" value="@ViewData["CurrentFilter"]" placeholder="Tìm tên hoặc mã voucher..." />
+                <button type="submit" class="px-3"><i class="fa-solid fa-magnifying-glass"></i></button>
+            </div>
+        </form>
+
+        <div class="ms-3">
+            <button onclick="showModal(0)" class="btn btn-success shadow-sm px-4 fw-bold">
+                <i class="fa-solid fa-plus me-2"></i> Tạo Voucher Mới
+            </button>
+        </div>
+    </div>
+
+    <!-- Table -->
+    <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-body p-0">
+            <table class="rounded-table">
+                <thead>
+                    <tr>
+                        <th class="text-start ps-4">Chương trình</th>
+                        <th>Mã Voucher</th>
+                        <th>Giá trị giảm</th>
+                        <th>Thời gian</th>
+                        <th>Trạng thái</th>
+                        <th>Hành động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        // Tính toán trạng thái
+                        var today = DateTime.Now.Date;
+                        string statusClass = "bg-success";
+                        string statusText = "Đang chạy";
+
+                        if (today < item.NgayBatDau) { statusClass = "bg-warning text-dark"; statusText = "Sắp diễn ra"; }
+                        else if (today > item.NgayKetThuc || item.SoLuong <= 0) { statusClass = "bg-secondary"; statusText = "Đã kết thúc"; }
+
+                        <tr>
+                            <td class="text-start ps-4 fw-bold">@item.TenKM</td>
+                            <td>
+                                <span class="badge bg-light text-dark border px-3 py-2 font-monospace fs-6">@item.MaVoucher</span>
+                            </td>
+                            <td class="fw-bold text-danger">
+                                @if (item.PhanTramGiam > 0)
+                                {
+                                    <span>-@item.PhanTramGiam%</span>
+                                }
+                                else
+                                {
+                                    <span>-@item.SoTienGiam?.ToString("N0") đ</span>
+                                }
+                            </td>
+                            <td class="small text-muted">
+                                @item.NgayBatDau?.ToString("dd/MM") - @item.NgayKetThuc?.ToString("dd/MM/yyyy")
+                            </td>
+                            <td>
+                                <span class="badge @statusClass rounded-pill px-3">@statusText</span>
+                            </td>
+                            <td>
+                                <button onclick="showModal(@item.MaKM)" class="btn btn-sm border-0 rounded-circle text-success" title="Sửa" style="width: 35px; height: 35px; background-color: #E8F5E9;">
+                                    <i class="fa-solid fa-pen"></i>
+                                </button>
+                                <button onclick="deleteItem(@item.MaKM)" class="btn btn-sm border-0 rounded-circle text-success ms-2" title="Xóa" style="width: 35px; height: 35px; background-color: #E8F5E9;">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+            @if (!Model.Any())
+            {
+                <div class="text-center py-5 text-muted">Chưa có chương trình khuyến mãi nào.</div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Modal Container -->
+<div class="modal fade" id="upsertModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow-lg">
+            <div class="modal-header bg-success text-white rounded-top-4">
+                <h5 class="modal-title fw-bold" id="modalTitle">Thông tin khuyến mãi</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4" id="modalBody"></div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        function showModal(id) {
+            var title = id == 0 ? 'Tạo Khuyến Mãi Mới' : 'Cập Nhật Khuyến Mãi';
+            $('#modalTitle').text(title);
+            var myModal = new bootstrap.Modal(document.getElementById('upsertModal'));
+            myModal.show();
+
+            $.ajax({
+                url: '/Admin/Promotion/Upsert?id=' + id,
+                type: 'GET',
+                success: function (data) { $('#modalBody').html(data); },
+                error: function () { $('#modalBody').html('<p class="text-danger text-center">Lỗi tải dữ liệu!</p>'); }
+            });
+        }
+
+        $(document).on('submit', '#upsertForm', function (e) {
+            e.preventDefault();
+            $.ajax({
+                url: $(this).attr('action'),
+                type: 'POST',
+                data: $(this).serialize(),
+                success: function (res) {
+                    if (res.isValid) { $('#upsertModal').modal('hide'); location.reload(); }
+                    else { $('#modalBody').html(res); }
+                }
+            });
+        });
+
+        function deleteItem(id) {
+            Swal.fire({
+                title: 'Xóa khuyến mãi này?',
+                text: "Dữ liệu sẽ không thể khôi phục!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#2E7D32',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Xóa ngay',
+                cancelButtonText: 'Hủy'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: '/Admin/Promotion/Delete',
+                        type: 'POST',
+                        data: { id: id },
+                        success: function (data) {
+                            if (data.success) { Swal.fire('Đã xóa!', '', 'success').then(() => location.reload()); }
+                            else { Swal.fire('Lỗi!', data.message, 'error'); }
+                        }
+                    });
+                }
+            })
+        }
+    </script>
+}

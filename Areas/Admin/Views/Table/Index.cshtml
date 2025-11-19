@@ -1,0 +1,187 @@
+﻿@model IEnumerable<QLQA_TH.Models.Ban>
+
+@{
+    ViewData["Title"] = "Quản Lý Bàn Ăn";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<link href="~/css/tableStyle.css" rel="stylesheet" />
+<link href="~/css/searchBarStyle.css" rel="stylesheet" />
+
+<div class="container-fluid px-4">
+
+    <!-- 1. TIÊU ĐỀ -->
+    <div class="my-4">
+        <h2 class="fw-bold text-success">Quản Lý Bàn Ăn</h2>
+        <p class="text-muted mb-0">Quản lý danh sách, trạng thái và thông tin bàn ăn của nhà hàng.</p>
+    </div>
+
+    <!-- 2. THANH CÔNG CỤ -->
+    <div class="d-flex justify-content-between align-items-center mb-4 bg-white p-3 rounded-3 shadow-sm border">
+
+        <!-- Tìm kiếm -->
+        <form asp-action="Index" method="get" class="d-flex flex-grow-1" style="max-width: 400px;">
+            <div class="custom-search-bar w-100">
+                <input type="text" name="searchString" value="@ViewData["CurrentFilter"]" placeholder="Tìm kiếm theo tên bàn hoặc ID..." />
+                <button type="submit" class="px-3"><i class="fa-solid fa-magnifying-glass"></i></button>
+            </div>
+        </form>
+
+        <!-- Nút Thêm -->
+        <div class="ms-3">
+            <button onclick="showModal(0)" class="btn btn-success shadow-sm px-4 fw-bold">
+                <i class="fa-solid fa-plus me-2"></i> Thêm Bàn Mới
+            </button>
+        </div>
+    </div>
+
+    <!-- 3. BẢNG DỮ LIỆU -->
+    <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-body p-0">
+            <table class="rounded-table">
+                <thead>
+                    <tr>
+                        <th style="width: 10%;">ID</th>
+                        <th style="width: 30%;">Tên Bàn</th>
+                        <th style="width: 20%;">Số Ghế</th>
+                        <th style="width: 20%;">Trạng Thái</th>
+                        <th style="width: 20%;">Hành Động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td class="fw-bold text-muted">#@item.MaBan</td>
+                            <td class="fw-bold fs-5">@item.TenBan</td>
+                            <td><i class="fa-solid fa-users me-1 text-secondary"></i> @item.SoGhe</td>
+                            <td>
+                                @if (item.TrangThai == 0)
+                                {
+                                    <span class="badge-status status-free">Trống</span>
+                                }
+                                else if (item.TrangThai == 1)
+                                {
+
+                                    <span class="badge-status status-occupied">Có khách</span>
+                                }
+                                else
+                                {
+
+                                    <span class="badge-status status-booked">Đã đặt</span>
+                                }
+                            </td>
+                            <td>
+                                <!-- ĐÃ SỬA: Bỏ 'btn-outline-success', dùng 'text-success' và background cố định -->
+                                <button onclick="showModal(@item.MaBan)" class="btn btn-sm border-0 rounded-circle text-success" title="Sửa" style="width: 35px; height: 35px; background-color: #E8F5E9;">
+                                    <i class="fa-solid fa-pen"></i>
+                                </button>
+
+                                <!-- ĐÃ SỬA: Tương tự cho nút Xóa -->
+                                <button onclick="deleteBan(@item.MaBan)" class="btn btn-sm border-0 rounded-circle text-success ms-2" title="Xóa" style="width: 35px; height: 35px; background-color: #E8F5E9;">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+            @if (!Model.Any())
+            {
+                <div class="text-center py-5">
+                    <i class="fa-solid fa-box-open fs-1 text-muted mb-3"></i>
+                    <p class="text-muted">Không tìm thấy dữ liệu bàn nào.</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Modal Container -->
+<div class="modal fade" id="upsertModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow-lg">
+            <div class="modal-header bg-success text-white rounded-top-4">
+                <h5 class="modal-title fw-bold" id="modalTitle">Thông tin bàn</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4" id="modalBody">
+                <!-- Form sẽ được load vào đây -->
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        // 1. Mở Modal
+        function showModal(id) {
+            if (id == 0) { $('#modalTitle').text('Thêm Bàn Mới'); }
+            else { $('#modalTitle').text('Cập Nhật Thông Tin Bàn'); }
+
+            var myModal = new bootstrap.Modal(document.getElementById('upsertModal'));
+            myModal.show();
+
+            // Load Partial View
+            $.ajax({
+                url: '/Admin/Table/Upsert?id=' + id,
+                type: 'GET',
+                success: function (data) { $('#modalBody').html(data); },
+                error: function () { $('#modalBody').html('<p class="text-danger text-center">Lỗi tải dữ liệu!</p>'); }
+            });
+        }
+
+        // 2. Xử lý Submit Form (AJAX)
+        $(document).on('submit', '#upsertForm', function (e) {
+            e.preventDefault();
+            var form = $(this);
+
+            $.ajax({
+                url: form.attr('action'),
+                type: 'POST',
+                data: form.serialize(),
+                success: function (res) {
+                    if (res.isValid) {
+                        $('#upsertModal').modal('hide');
+                        location.reload();
+                    } else {
+                        $('#modalBody').html(res);
+                    }
+                },
+                error: function (err) {
+                    console.log(err);
+                }
+            });
+        });
+
+        // 3. Xóa Bàn
+        function deleteBan(id) {
+            Swal.fire({
+                title: 'Bạn có chắc không?',
+                text: "Dữ liệu sẽ không thể khôi phục!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#2E7D32',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Xóa ngay!',
+                cancelButtonText: 'Hủy'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: '/Admin/Table/Delete',
+                        type: 'POST',
+                        data: { id: id },
+                        success: function (data) {
+                            if (data.success) {
+                                Swal.fire('Đã xóa!', 'Thành công.', 'success').then(() => { location.reload(); });
+                            } else {
+                                Swal.fire('Lỗi!', data.message, 'error');
+                            }
+                        }
+                    });
+                }
+            })
+        }
+    </script>
+}

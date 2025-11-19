@@ -1,0 +1,80 @@
+﻿/* Biến màu sắc chủ đạo */
+:root {
+    --primary-green: #2E7D32; /* Xanh lá đậm */
+    --light-green: #E8F5E9; /* Xanh lá nhạt làm nền */
+    --hover-green: #1B5E20; /* Xanh lá khi hover */
+}
+
+body {
+    background-color: var(--light-green);
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.login-card {
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    overflow: hidden;
+    width: 100%;
+    max-width: 450px;
+    padding: 2rem;
+}
+
+.login-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+    .login-header h2 {
+        color: var(--primary-green);
+        font-weight: 700;
+    }
+
+.login-icon {
+    font-size: 3rem;
+    color: var(--primary-green);
+    margin-bottom: 10px;
+}
+
+/* Tùy chỉnh Form Control & Select */
+.form-control, .form-select {
+    border-radius: 8px;
+    padding: 12px;
+    border: 1px solid #ced4da;
+}
+
+    .form-control:focus, .form-select:focus {
+        border-color: var(--primary-green);
+        box-shadow: 0 0 0 0.25rem rgba(46, 125, 50, 0.25); /* Hiệu ứng shadow xanh */
+    }
+
+/* Nút Đăng nhập */
+.btn-login {
+    background-color: var(--primary-green);
+    color: white;
+    font-weight: 600;
+    padding: 12px;
+    border-radius: 8px;
+    border: none;
+    width: 100%;
+    transition: all 0.3s;
+}
+
+    .btn-login:hover {
+        background-color: var(--hover-green);
+        color: white;
+    }
+
+/* Input Group (Icon bên trái ô nhập) */
+.input-group-text {
+    background-color: #f8f9fa;
+    border-right: none;
+}
+
+.form-control {
+    border-left: none;
+}

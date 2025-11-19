@@ -1,0 +1,152 @@
+﻿/* Biến màu sắc (Đồng bộ với theme Login & Admin) */
+:root {
+    --primary-green: #2E7D32;
+    --light-green-bg: #F1F8E9;
+    --text-dark: #333;
+    --text-muted: #666;
+}
+
+/* Container chính */
+.profile-container {
+    max-width: 900px;
+    margin: 40px auto;
+    padding: 0 15px;
+}
+
+/* Card bao bọc */
+.profile-card {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Header màu xanh phía trên */
+.profile-header-bg {
+    height: 150px;
+    background: linear-gradient(135deg, #43A047, #2E7D32);
+    position: relative;
+}
+
+/* Phần nội dung chính */
+.profile-body {
+    padding: 0 40px 40px 40px;
+    position: relative;
+}
+
+/* Avatar User */
+.profile-avatar {
+    width: 140px;
+    height: 140px;
+    background: #fff;
+    border-radius: 50%;
+    padding: 5px;
+    position: absolute;
+    top: -70px; /* Đẩy lên đè vào phần header */
+    left: 40px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+    .profile-avatar img {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        object-fit: cover;
+        background-color: #e0e0e0; /* Màu nền khi chưa có ảnh */
+    }
+
+/* Tên và Chức vụ */
+.profile-identity {
+    margin-top: 80px; /* Khoảng cách để tránh Avatar */
+    margin-bottom: 30px;
+}
+
+.profile-name {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 5px;
+}
+
+.profile-role {
+    font-size: 1rem;
+    color: var(--primary-green);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    background-color: var(--light-green-bg);
+    padding: 5px 15px;
+    border-radius: 20px;
+    display: inline-block;
+}
+
+/* Lưới thông tin (Grid Layout) */
+.profile-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 25px;
+}
+
+.info-group {
+    margin-bottom: 15px;
+}
+
+.info-label {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    margin-bottom: 5px;
+    font-weight: 500;
+}
+
+.info-value {
+    font-size: 1.1rem;
+    color: var(--text-dark);
+    font-weight: 600;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #eee;
+}
+
+/* Nút hành động */
+.profile-actions {
+    margin-top: 40px;
+    display: flex;
+    gap: 15px;
+}
+
+.btn-edit-profile {
+    background-color: var(--primary-green);
+    color: white;
+    padding: 10px 25px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: 0.3s;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+    .btn-edit-profile:hover {
+        background-color: #1B5E20;
+        color: white;
+        transform: translateY(-2px);
+    }
+
+/* Responsive */
+@media (max-width: 768px) {
+    .profile-avatar {
+        left: 50%;
+        transform: translateX(-50%);
+    }
+
+    .profile-identity {
+        text-align: center;
+    }
+
+    .profile-actions {
+        justify-content: center;
+    }
+}

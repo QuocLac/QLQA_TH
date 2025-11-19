@@ -1,0 +1,182 @@
+﻿/* Container chính */
+.kitchen-container {
+    padding: 20px;
+    background-color: #f4f6f8;
+    min-height: calc(100vh - 70px);
+}
+
+/* Header của trang Bếp */
+.kitchen-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.kitchen-stats {
+    display: flex;
+    gap: 15px;
+}
+
+.stat-badge {
+    background: white;
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-weight: 600;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+    .stat-badge i {
+        font-size: 1.1rem;
+    }
+
+.stat-pending {
+    color: #ff9800;
+    border-left: 4px solid #ff9800;
+}
+
+.stat-cooking {
+    color: #2196f3;
+    border-left: 4px solid #2196f3;
+}
+
+/* Lưới phiếu đặt (Ticket Grid) */
+.ticket-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+/* Ticket Card */
+.ticket-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    overflow: hidden;
+    border: 1px solid #e0e0e0;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.2s;
+}
+
+    .ticket-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+    }
+
+/* Header của Ticket */
+.ticket-header {
+    padding: 12px 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #eee;
+}
+
+/* Màu sắc header theo trạng thái */
+.header-pending {
+    background-color: #fff3e0;
+    color: #e65100;
+    border-top: 4px solid #ff9800;
+}
+
+.header-cooking {
+    background-color: #e3f2fd;
+    color: #0d47a1;
+    border-top: 4px solid #2196f3;
+}
+
+.ticket-time {
+    font-size: 0.85rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.ticket-table {
+    font-size: 1.1rem;
+    font-weight: 800;
+}
+
+/* Nội dung món ăn */
+.ticket-body {
+    padding: 15px;
+    flex-grow: 1;
+}
+
+.order-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px dashed #eee;
+}
+
+    .order-item:last-child {
+        border-bottom: none;
+    }
+
+.item-qty {
+    font-weight: 800;
+    font-size: 1.1rem;
+    color: #2E7D32;
+    width: 40px;
+}
+
+.item-name {
+    flex-grow: 1;
+    font-weight: 600;
+    color: #333;
+}
+
+/* Footer Button */
+.ticket-footer {
+    padding: 15px;
+    background: #f9f9f9;
+    border-top: 1px solid #eee;
+}
+
+.btn-kitchen-action {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.btn-start {
+    background-color: #ff9800;
+    color: white;
+}
+
+    .btn-start:hover {
+        background-color: #f57c00;
+    }
+
+.btn-finish {
+    background-color: #2E7D32;
+    color: white;
+}
+
+    .btn-finish:hover {
+        background-color: #1B5E20;
+    }
+
+/* Timer (Thời gian chờ) */
+.time-elapsed {
+    font-size: 0.8rem;
+    padding: 2px 8px;
+    border-radius: 10px;
+    background: rgba(0,0,0,0.1);
+}

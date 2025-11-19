@@ -1,0 +1,470 @@
+﻿/* ==================================================
+   1. CẤU HÌNH CHUNG & BIẾN MÀU SẮC
+   ================================================== */
+:root {
+    --primary-green: #2E7D32; /* Xanh chủ đạo */
+    --light-green: #E8F5E9; /* Nền xanh nhạt (Dùng cho nút tĩnh) */
+    --hover-green: #1B5E20; /* Xanh đậm (Dùng khi hover) */
+    --text-dark: #2c3e50;
+    --text-muted: #6c757d;
+    --danger-red: #dc3545;
+    --shadow-sm: 0 2px 8px rgba(0,0,0,0.05);
+    --shadow-hover: 0 8px 20px rgba(46, 125, 50, 0.15);
+    --radius-lg: 12px;
+}
+
+/* ==================================================
+   2. TRANG CHỌN BÀN (TABLE LIST)
+   ================================================== */
+.table-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 20px;
+    padding: 15px 0;
+}
+
+.table-card {
+    background: white;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    transition: all 0.2s ease;
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+    border: 2px solid transparent;
+    display: block;
+    overflow: hidden;
+}
+
+    .table-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-hover);
+    }
+
+.table-header {
+    padding: 20px;
+    text-align: center;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.table-icon {
+    font-size: 3rem;
+    margin-bottom: 10px;
+    display: block;
+}
+
+.table-name {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.table-body {
+    padding: 10px;
+    text-align: center;
+    background-color: #fafafa;
+    color: #666;
+    font-size: 0.9rem;
+}
+
+/* Trạng thái bàn */
+.status-free {
+    border-color: var(--primary-green);
+}
+
+    .status-free .table-header {
+        background-color: var(--light-green);
+        color: var(--primary-green);
+    }
+
+    .status-free .table-icon {
+        color: #43A047;
+    }
+
+.status-occupied {
+    border-color: #C62828;
+}
+
+    .status-occupied .table-header {
+        background-color: #FFEBEE;
+        color: #C62828;
+    }
+
+    .status-occupied .table-icon {
+        color: #E53935;
+        animation: pulse 2s infinite;
+    }
+
+.status-booked {
+    border-color: #EF6C00;
+}
+
+    .status-booked .table-header {
+        background-color: #FFF3E0;
+        color: #EF6C00;
+    }
+
+    .status-booked .table-icon {
+        color: #FB8C00;
+    }
+
+.nav-pills .nav-link {
+    color: #555;
+    font-weight: 600;
+    border-radius: 30px;
+    padding: 10px 25px;
+    margin-right: 10px;
+}
+
+    .nav-pills .nav-link.active {
+        background-color: var(--primary-green);
+        color: white;
+    }
+
+@keyframes pulse {
+    0% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.7;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+
+/* ==================================================
+   3. TRANG GỌI MÓN (POS LAYOUT)
+   ================================================== */
+.pos-container {
+    display: flex;
+    height: calc(100vh - 110px);
+    overflow: hidden;
+    gap: 20px;
+}
+
+/* --- MENU (TRÁI) --- */
+.pos-menu-area {
+    flex: 7;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.menu-filter-bar {
+    background: white;
+    padding: 12px 15px;
+    border-radius: var(--radius-md);
+    margin-bottom: 15px;
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+.pos-menu-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 5px;
+    scrollbar-width: thin;
+}
+
+/* --- CARD MÓN ĂN (ĐÃ CHỈNH SỬA NÚT) --- */
+.pos-product-card {
+    background: white;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #eee;
+    position: relative;
+}
+
+    .pos-product-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-hover);
+        border-color: var(--primary-green);
+    }
+
+.pos-product-img-wrapper {
+    width: 100%;
+    padding-top: 65%;
+    position: relative;
+    background: #f8f9fa;
+    overflow: hidden; /* Bo góc ảnh */
+}
+
+.pos-product-img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.pos-product-card:hover .pos-product-img {
+    transform: scale(1.1);
+}
+
+.pos-product-body {
+    padding: 15px;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.pos-product-title {
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--text-dark);
+    margin-bottom: 5px;
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.pos-product-price {
+    color: var(--primary-green);
+    font-weight: 800;
+    font-size: 1.1rem;
+    margin-top: auto;
+}
+
+/* --- NÚT THÊM (ĐÃ THIẾT KẾ LẠI) --- */
+.btn-add-item {
+    margin-top: 12px;
+    width: 100%;
+    padding: 10px;
+    /* Style mặc định: Xanh nhạt, chữ xanh đậm */
+    background-color: var(--light-green);
+    color: var(--primary-green);
+    border: 1px solid transparent;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    text-transform: uppercase; /* Chữ in hoa */
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+}
+
+    /* Hiệu ứng khi Hover vào NÚT */
+    .btn-add-item:hover {
+        background-color: var(--primary-green); /* Đổi nền thành xanh đậm */
+        color: white; /* Chữ trắng */
+        box-shadow: 0 4px 10px rgba(46, 125, 50, 0.3);
+    }
+
+/* Hiệu ứng khi Hover vào CARD (Tự động làm nổi bật nút) */
+.pos-product-card:hover .btn-add-item {
+    background-color: var(--primary-green);
+    color: white;
+}
+
+
+/* --- GIỎ HÀNG (PHẢI) --- */
+.pos-cart-area {
+    flex: 3;
+    min-width: 300px;
+    background: white;
+    border-radius: var(--radius-lg);
+    box-shadow: 0 0 20px rgba(0,0,0,0.05);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid #e0e0e0;
+    height: 100%;
+}
+
+.cart-header {
+    flex-shrink: 0;
+    padding: 15px 20px;
+    background: var(--primary-green);
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#cartContent {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    overflow: hidden;
+    min-height: 0;
+}
+
+.cart-items-container {
+    flex: 1;
+    overflow-y: auto;
+    padding: 15px;
+    background: #f9f9f9;
+    min-height: 0;
+}
+
+.cart-item {
+    background: white;
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    border-left: 4px solid var(--primary-green);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+}
+
+.cart-item-info h6 {
+    margin: 0;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #333;
+}
+
+.cart-item-info small {
+    color: #666;
+    font-size: 0.8rem;
+}
+
+.cart-qty-control {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #f1f1f1;
+    padding: 3px;
+    border-radius: 20px;
+}
+
+.btn-qty-mini {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: none;
+    background: white;
+    color: #333;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    cursor: pointer;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    transition: 0.2s;
+}
+
+    .btn-qty-mini:hover {
+        color: var(--primary-green);
+        transform: scale(1.1);
+    }
+
+.cart-item-total {
+    font-weight: 700;
+    color: var(--primary-green);
+    min-width: 65px;
+    text-align: right;
+    font-size: 0.95rem;
+}
+
+.cart-footer {
+    flex-shrink: 0;
+    padding: 20px;
+    background: white;
+    border-top: 1px solid #eee;
+    box-shadow: 0 -4px 15px rgba(0,0,0,0.03);
+    z-index: 10;
+}
+
+.cart-total-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 15px;
+}
+
+.total-price {
+    color: var(--danger-red);
+    font-size: 1.3rem;
+}
+
+/* ==================================================
+   4. TOAST NOTIFICATION (THÔNG BÁO NỔI)
+   ================================================== */
+.toast-container {
+    z-index: 1055; /* Cao hơn Modal */
+}
+
+.custom-toast {
+    background-color: white;
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+    overflow: hidden;
+    margin-bottom: 10px;
+    transition: all 0.3s ease;
+    border-left: 5px solid var(--primary-green); /* Viền trái xanh lá */
+    min-width: 300px;
+}
+
+.custom-toast-header {
+    background-color: #fff;
+    padding: 10px 15px;
+    border-bottom: 1px solid #f0f0f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.toast-title {
+    font-weight: 700;
+    color: var(--primary-green);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.custom-toast-body {
+    padding: 12px 15px;
+    color: #333;
+    font-size: 0.95rem;
+}
+
+.toast-time {
+    font-size: 0.75rem;
+    color: #999;
+}
+
+/* Hiệu ứng slide vào */
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.custom-toast.show {
+    animation: slideInRight 0.4s ease forwards;
+}

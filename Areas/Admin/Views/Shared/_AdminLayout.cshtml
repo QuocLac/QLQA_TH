@@ -1,0 +1,104 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Admin Quản Lý</title>
+    
+    <!-- Bootstrap 5 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <!-- Custom Admin CSS -->
+    <link rel="stylesheet" href="~/css/admin-master.css" />
+</head>
+<body>
+    <!-- 1. HEADER -->
+    <header>
+        <div class="header-left">
+            <!-- ĐÃ ĐỔI ICON THÀNH ẢNH LOGO -->
+            <img src="~/images/Logo.png" alt="Logo App" style="height: 40px; width: auto; object-fit: contain;" />
+            <span class="ms-2">NHÀ TÔI</span>
+        </div>
+        
+        <div class="header-right">
+            <!-- Search Box -->
+            <div class="header-search">
+                <input type="text" placeholder="Tìm kiếm chức năng..." />
+            </div>
+            
+            <!-- Icons & User -->
+            <div class="header-icons">
+                <i class="fa-regular fa-bell" title="Thông báo"></i>
+                <i class="fa-regular fa-envelope" title="Tin nhắn"></i>
+                
+                <div class="dropdown">
+                    <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle" data-bs-toggle="dropdown">
+                        <span class="me-2 text-dark fw-bold">@User.FindFirst("FullName")?.Value</span>
+                        <!-- ĐIỀU CHỈNH AVATAR -->
+                        <div style="width: 35px; height: 35px; background: #2E7D32; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                            <img src="@(string.IsNullOrEmpty(User.FindFirst("HinhAnh")?.Value) ? "/images/avatar-default.png" : User.FindFirst("HinhAnh")?.Value)" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover;" />
+                        </div>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li>
+                            <a class="dropdown-item" asp-area="Admin" asp-controller="Profile" asp-action="Index">
+                                <i class="fa-regular fa-id-card me-2"></i> Hồ sơ cá nhân
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <a class="dropdown-item text-danger" asp-area="" asp-controller="Account" asp-action="Logout">
+                                <i class="fa-solid fa-right-from-bracket me-2"></i> Đăng xuất
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 2. MAIN CONTAINER -->
+    <div class="main-container">
+        <!-- SIDEBAR -->
+        <nav class="sidebar">
+            <div class="nav flex-column">
+                <small class="text-uppercase text-muted fw-bold mb-2 px-2" style="font-size: 0.75rem;">Tổng quan</small>
+                
+                <a href="@Url.Action("Index", "Home", new { area = "Admin" })" class="active">
+                    <i class="fa-solid fa-chart-pie"></i> Dashboard
+                </a>
+                
+                <small class="text-uppercase text-muted fw-bold mb-2mt-3 px-2" style="font-size: 0.75rem; margin-top: 15px;">Quản lý</small>
+                
+                <a href="@Url.Action("Index", "User", new { area = "Admin" })">
+                    <i class="fa-solid fa-users"></i> Nhân viên
+                </a>
+                <a href="@Url.Action("Index", "Menu", new { area = "Admin" })">
+                    <i class="fa-solid fa-burger"></i> Món ăn
+                </a>
+                <a href="#">
+                    <i class="fa-solid fa-receipt"></i> Hóa đơn
+                </a>
+                <a href="@Url.Action("Index", "Promotion", new { area = "Admin" })">
+                    <i class="fa-solid fa-tags"></i> Khuyến mãi
+                </a>
+                <a href="@Url.Action("Index", "Table", new { area = "Admin" })">
+                    <i class="fa-solid fa-chair"></i> Bàn ăn
+                </a>
+            </div>
+        </nav>
+
+        <!-- CONTENT BODY -->
+        <main class="content">
+            @RenderBody()
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> 
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

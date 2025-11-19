@@ -1,0 +1,205 @@
+﻿@model QLQA_TH.Models.ViewModels.StaffDashboardViewModel
+
+@{
+    ViewData["Title"] = "Trang Chủ";
+}
+
+<style>
+    /* Style riêng nhẹ nhàng cho trang nhân viên */
+    .stat-card-staff {
+        background: #fff;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        display: flex;
+        align-items: center;
+        border-left: 5px solid transparent;
+        transition: transform 0.2s;
+    }
+
+        .stat-card-staff:hover {
+            transform: translateY(-5px);
+        }
+
+    .border-success-custom {
+        border-left-color: #28a745;
+    }
+
+    .border-warning-custom {
+        border-left-color: #ffc107;
+    }
+
+    .border-info-custom {
+        border-left-color: #17a2b8;
+    }
+
+    .icon-box {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin-right: 20px;
+    }
+</style>
+
+<div class="container py-4">
+    <div class="mb-4">
+        <h2 class="fw-bold text-dark">Xin chào, @User.FindFirst("FullName")?.Value!</h2>
+        <p class="text-muted">Cập nhật tình hình kinh doanh trong ngày hôm nay (@DateTime.Now.ToString("dd/MM/yyyy")).</p>
+    </div>
+
+    <!-- 1. THẺ THỐNG KÊ (3 Cột) -->
+    <div class="row mb-4">
+        <!-- Đơn hoàn thành -->
+        <div class="col-md-4 mb-3">
+            <div class="stat-card-staff border-success-custom">
+                <div class="icon-box bg-success bg-opacity-10 text-success">
+                    <i class="fa-solid fa-circle-check"></i>
+                </div>
+                <div>
+                    <h6 class="text-muted mb-1">Đơn hoàn thành (Hôm nay)</h6>
+                    <h2 class="fw-bold mb-0">@Model.CompletedOrdersToday</h2>
+                </div>
+            </div>
+        </div>
+
+        <!-- Đơn hủy -->
+        <div class="col-md-4 mb-3">
+            <div class="stat-card-staff border-warning-custom">
+                <div class="icon-box bg-warning bg-opacity-10 text-warning">
+                    <i class="fa-solid fa-ban"></i>
+                </div>
+                <div>
+                    <h6 class="text-muted mb-1">Đơn đã hủy (Hôm nay)</h6>
+                    <h2 class="fw-bold mb-0">@Model.CancelledOrdersToday</h2>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tổng món -->
+        <div class="col-md-4 mb-3">
+            <div class="stat-card-staff border-info-custom">
+                <div class="icon-box bg-info bg-opacity-10 text-info">
+                    <i class="fa-solid fa-utensils"></i>
+                </div>
+                <div>
+                    <h6 class="text-muted mb-1">Món ăn đã bán (Hôm nay)</h6>
+                    <h2 class="fw-bold mb-0">@Model.TotalDishesSoldToday</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. BIỂU ĐỒ & TOP SẢN PHẨM -->
+    <div class="row">
+        <!-- Cột Trái: Biểu đồ tròn -->
+        <div class="col-lg-5 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white py-3">
+                    <h5 class="fw-bold mb-0"><i class="fa-solid fa-chart-pie me-2 text-primary"></i>Tỉ lệ đơn hàng hôm nay</h5>
+                </div>
+                <div class="card-body d-flex justify-content-center align-items-center">
+                    <div style="width: 300px; height: 300px;">
+                        <canvas id="orderStatusChart"></canvas>
+                    </div>
+                </div>
+                @if (Model.CompletedOrdersToday == 0 && Model.CancelledOrdersToday == 0)
+                {
+                    <div class="card-footer bg-white text-center text-muted small border-0 pb-4">
+                        Chưa có dữ liệu đơn hàng trong ngày.
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Cột Phải: Top 5 Món Ăn -->
+        <div class="col-lg-7 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="fw-bold mb-0"><i class="fa-solid fa-crown me-2 text-warning"></i>Top 5 Món Bán Chạy Nhất</h5>
+                    <span class="badge bg-light text-dark border">Toàn thời gian</span>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="ps-4">Tên món</th>
+                                    <th>Giá bán</th>
+                                    <th class="text-center">Đã bán</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.TopSellingItems)
+                                {
+                                    <tr>
+                                        <td class="ps-4">
+                                            <div class="d-flex align-items-center">
+                                                <img src="@(string.IsNullOrEmpty(item.HinhAnh) ? "/images/placeholder.png" : item.HinhAnh)"
+                                                     style="width: 45px; height: 45px; border-radius: 8px; object-fit: cover; margin-right: 15px;"
+                                                     alt="@item.TenMon">
+                                                <div>
+                                                    <div class="fw-bold">@item.TenMon</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>@item.Gia.ToString("N0") ₫</td>
+                                        <td class="text-center">
+                                            <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3">@item.SoLuongBan</span>
+                                        </td>
+                                    </tr>
+                                }
+
+                                @if (!Model.TopSellingItems.Any())
+                                {
+                                    <tr>
+                                        <td colspan="3" class="text-center py-4 text-muted">Chưa có dữ liệu bán hàng.</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Dữ liệu từ Model
+        var statusData = @Html.Raw(Json.Serialize(Model.OrderStatusData)); // [Hoàn thành, Hủy]
+
+        // Kiểm tra nếu chưa có dữ liệu thì hiển thị giả lập để biểu đồ không trống trơn (Optional)
+        // Hoặc để mảng [0,0] thì Chartjs sẽ không vẽ gì.
+
+        var ctx = document.getElementById('orderStatusChart').getContext('2d');
+        var myPieChart = new Chart(ctx, {
+            type: 'doughnut', // Biểu đồ vành khuyên (đẹp hơn Pie thường)
+            data: {
+                labels: ['Hoàn thành', 'Đã hủy'],
+                datasets: [{
+                    data: statusData,
+                    backgroundColor: [
+                        '#28a745', // Xanh lá (Hoàn thành)
+                        '#dc3545'  // Đỏ (Hủy)
+                    ],
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+    </script>
+}

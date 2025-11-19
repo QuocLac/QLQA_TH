@@ -1,0 +1,196 @@
+﻿@model QLQA_TH.Models.PhieuDat
+@{
+    ViewData["Title"] = "Đang Chế Biến";
+    Layout = null; // KHÔNG DÙNG LAYOUT CHUNG
+}
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Đang làm món - Bàn @(Model.HoaDon?.Ban?.TenBan)</title>
+
+    <!-- Nhúng Bootstrap & FontAwesome -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+    <style>
+        body {
+            background-color: #263238; /* Nền tối giúp tập trung */
+            color: white;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', sans-serif;
+            overflow: hidden;
+        }
+
+        .cooking-card {
+            background: white;
+            color: #333;
+            width: 95%;
+            max-width: 700px;
+            border-radius: 16px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            max-height: 95vh;
+            box-shadow: 0 0 60px rgba(0,0,0,0.7);
+            animation: slideIn 0.3s ease;
+        }
+
+        .c-header {
+            background: #2196f3; /* Màu xanh dương đặc trưng "Đang làm" */
+            color: white;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .c-body {
+            padding: 0;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .dish-row {
+            display: flex;
+            align-items: center;
+            padding: 20px 30px;
+            border-bottom: 1px solid #eee;
+            font-size: 1.4rem; /* Chữ to dễ đọc từ xa */
+        }
+
+        .dish-q {
+            width: 55px;
+            height: 55px;
+            background: #e3f2fd;
+            color: #1565c0;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            margin-right: 20px;
+            flex-shrink: 0;
+        }
+
+        .c-footer {
+            padding: 25px;
+            background: #f5f5f5;
+            border-top: 1px solid #ddd;
+        }
+
+        .btn-done {
+            width: 100%;
+            padding: 18px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            border-radius: 12px;
+            background-color: #2E7D32;
+            color: white;
+            border: none;
+            box-shadow: 0 4px 15px rgba(46, 125, 50, 0.3);
+            transition: transform 0.1s;
+        }
+
+            .btn-done:active {
+                transform: scale(0.98);
+            }
+
+        keyframes slideIn {
+            from
+
+        {
+            transform: translateY(20px);
+            opacity: 0;
+        }
+
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        }
+    </style>
+</head>
+<body>
+    <div class="cooking-card">
+        <!-- Header -->
+        <div class="c-header">
+            <div>
+                <h2 class="m-0 fw-bold">BÀN @(Model.HoaDon?.Ban?.TenBan ?? "Mang về")</h2>
+                <small class="opacity-75">Phiếu #@Model.MaPhieu</small>
+            </div>
+            <div class="text-end">
+                <h4 class="m-0"><i class="fa-solid fa-fire fa-fade"></i> ĐANG LÀM</h4>
+                <!-- Đồng hồ đếm giờ -->
+                <div id="timer" class="font-monospace fs-5 mt-1">00:00</div>
+            </div>
+        </div>
+
+        <!-- Danh sách món -->
+        <div class="c-body">
+            @foreach (var item in Model.DonHangs)
+            {
+                <div class="dish-row">
+                    <div class="dish-q">@item.SoLuong</div>
+                    <div class="fw-bold">@item.MonAn.TenMon</div>
+                </div>
+            }
+        </div>
+
+        <!-- Nút hoàn tất -->
+        <div class="c-footer">
+            <button onclick="finishCooking(@Model.MaPhieu)" class="btn-done">
+                <i class="fa-solid fa-check-circle me-2"></i> HOÀN TẤT & GỌI PHỤC VỤ
+            </button>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+    <script>
+        // 1. Đồng hồ đếm thời gian làm
+        var start = new Date("@Model.ThoiGianDat.ToString("yyyy-MM-ddTHH:mm:ss")").getTime();
+
+        setInterval(() => {
+            var now = new Date().getTime();
+            var diff = now - start;
+            // Tính phút:giây
+            var m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            var s = Math.floor((diff % (1000 * 60)) / 1000);
+            document.getElementById("timer").innerText = (m<10?"0"+m:m) + ":" + (s<10?"0"+s:s);
+        }, 1000);
+
+        // 2. Hàm hoàn tất
+        function finishCooking(id) {
+            Swal.fire({
+                title: 'Hoàn tất món ăn?',
+                text: "Món ăn sẽ chuyển sang trạng thái 'Chờ cung ứng' để phục vụ bưng ra.",
+                icon: 'success',
+                showCancelButton: true,
+                confirmButtonColor: '#2E7D32',
+                confirmButtonText: 'Xác nhận Xong',
+                cancelButtonText: 'Chưa xong'
+            }).then((res) => {
+                if (res.isConfirmed) {
+                    $.post('/Kitchen/CompleteCooking', { maPhieu: id }, function(data) {
+                        if (data.success) {
+                            // Quay về trang danh sách chờ
+                            window.location.href = '/Kitchen/Index';
+                        } else {
+                            Swal.fire('Lỗi', data.msg, 'error');
+                        }
+                    });
+                }
+            });
+        }
+    </script>
+</body>
+</html>

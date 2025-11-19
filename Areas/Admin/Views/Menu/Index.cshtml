@@ -1,0 +1,148 @@
+﻿@model IEnumerable<QLQA_TH.Models.MonAn>
+
+@{
+    ViewData["Title"] = "Quản Lý Món Ăn";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<link href="~/css/searchBarStyle.css" rel="stylesheet" />
+<link href="~/css/menuStyle.css" rel="stylesheet" />
+
+<div class="container-fluid px-4">
+    <!-- 1. TIÊU ĐỀ -->
+    <div class="my-4">
+        <h2 class="fw-bold text-success">Quản Lý Món Ăn</h2>
+        <p class="text-muted mb-0">Quản lý thực đơn, giá cả và hình ảnh món ăn.</p>
+    </div>
+
+    <!-- 2. THANH CÔNG CỤ (SEARCH + FILTER + ADD) -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 bg-white p-3 rounded-3 shadow-sm border gap-3">
+
+        <!-- Form Tìm kiếm & Lọc (Gộp chung 1 form để giữ giá trị khi submit) -->
+        <form asp-action="Index" method="get" class="d-flex flex-grow-1 gap-3 align-items-center" style="max-width: 800px;">
+
+            <!-- A. Thanh tìm kiếm -->
+            <div class="custom-search-bar flex-grow-1">
+                <input type="text" name="searchString" value="@ViewData["CurrentFilter"]" placeholder="Tìm tên món ăn..." />
+                <button type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
+            </div>
+
+            <!-- B. Bộ lọc Loại món -->
+            <div class="d-flex align-items-center" style="min-width: 200px;">
+                <i class="fa-solid fa-filter text-success me-2"></i>
+                <select name="maLoai" class="form-select"
+                        asp-items="@ViewBag.ListLoai"
+                        onchange="this.form.submit()">
+                    <option value="">-- Tất cả loại món --</option>
+                </select>
+
+                <!-- Script nhỏ để set giá trị đã chọn cho Dropdown -->
+                @if (ViewData["CurrentCategory"] != null)
+                {
+                    <script>
+                        document.querySelector('select[name="maLoai"]').value = "@ViewData["CurrentCategory"]";
+                    </script>
+                }
+            </div>
+        </form>
+
+        <!-- C. Nút Thêm Mới -->
+        <div class="ms-auto">
+            <a asp-action="Create" class="btn btn-success shadow-sm px-4 fw-bold text-decoration-none">
+                <i class="fa-solid fa-plus me-2"></i> Thêm Món Mới
+            </a>
+        </div>
+    </div>
+
+    <!-- 3. LƯỚI CARDVIEW -->
+    @if (!Model.Any())
+    {
+        <div class="text-center py-5 border rounded-3 bg-white shadow-sm">
+            <i class="fa-solid fa-utensils fs-1 text-muted mb-3"></i>
+            <p class="text-muted">Không tìm thấy món ăn nào phù hợp.</p>
+            <a asp-action="Index" class="btn btn-outline-success mt-2">Xóa bộ lọc</a>
+        </div>
+    }
+    else
+    {
+        <div class="menu-grid">
+            @foreach (var item in Model)
+            {
+                <div class="menu-card">
+                    <!-- Ảnh -->
+                    <div class="card-img-wrapper">
+                        <img src="@(string.IsNullOrEmpty(item.HinhAnh) ? "/images/placeholder.png" : item.HinhAnh)" alt="@item.TenMon">
+
+                        <!-- Badge Trạng thái -->
+                        @if (item.SoLuong > 10)
+                        {
+                            <span class="card-badge badge-instock">Còn hàng</span>
+                        }
+                        else if (item.SoLuong > 0)
+                        {
+
+                            <span class="card-badge badge-lowstock">Sắp hết</span>
+                        }
+                        else
+                        {
+
+                            <span class="card-badge badge-outstock">Hết hàng</span>
+                        }
+                    </div>
+
+                    <!-- Nội dung -->
+                    <div class="card-body">
+                        <div class="card-category">@item.LoaiMon?.TenLoai</div>
+                        <div class="card-title">@item.TenMon</div>
+                        <div class="card-desc">@item.MoTa</div>
+                        <div class="card-price">@item.Gia.ToString("N0") ₫</div>
+                    </div>
+
+                    <!-- Hành động -->
+                    <div class="card-footer">
+                        <a asp-action="Edit" asp-route-id="@item.MaMon" class="btn-card-action btn-view">
+                            <i class="fa-solid fa-pen"></i> Sửa
+                        </a>
+
+                        <button onclick="deleteMenu(@item.MaMon)" class="btn-card-action btn-delete">
+                            <i class="fa-solid fa-trash"></i> Xóa
+                        </button>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        function deleteMenu(id) {
+            Swal.fire({
+                title: 'Xóa món này?',
+                text: "Không thể khôi phục sau khi xóa!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Xóa ngay!',
+                cancelButtonText: 'Hủy'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: '/Admin/Menu/Delete',
+                        type: 'POST',
+                        data: { id: id },
+                        success: function (data) {
+                            if (data.success) {
+                                Swal.fire('Đã xóa!', 'Thành công.', 'success').then(() => { location.reload(); });
+                            } else {
+                                Swal.fire('Lỗi!', data.message, 'error');
+                            }
+                        }
+                    });
+                }
+            })
+        }
+    </script>
+}

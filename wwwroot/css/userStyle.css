@@ -1,0 +1,157 @@
+﻿/* Kế thừa grid từ menuStyle nhưng chỉnh lại cho User */
+.user-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 24px;
+    padding-bottom: 20px;
+}
+
+.user-card {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+    transition: transform 0.3s ease;
+    border: 1px solid #f0f0f0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+    .user-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(46, 125, 50, 0.15);
+        border-color: #2E7D32;
+    }
+
+/* Phần Header Card (Avatar + Background) */
+.user-header {
+    height: 100px;
+    background: linear-gradient(135deg, #43A047, #2E7D32);
+    position: relative;
+    margin-bottom: 50px; /* Để dành chỗ cho avatar lòi xuống */
+}
+
+.user-avatar {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    border: 4px solid #fff;
+    position: absolute;
+    bottom: -50px;
+    left: 20px;
+    background-color: #eee;
+    overflow: hidden;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+    .user-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+.user-role-badge {
+    position: absolute;
+    bottom: 10px;
+    right: 15px;
+    background: rgba(255,255,255,0.2);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    backdrop-filter: blur(4px);
+}
+
+/* Body Card */
+.user-body {
+    padding: 0 20px 20px;
+    flex-grow: 1;
+}
+
+.user-name {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 4px;
+}
+
+.user-position {
+    color: #2E7D32;
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    margin-bottom: 15px;
+    display: block;
+}
+
+.user-info-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+    color: #666;
+    font-size: 0.9rem;
+}
+
+    .user-info-row i {
+        width: 20px;
+        text-align: center;
+        color: #888;
+    }
+
+/* Footer Actions */
+.user-footer {
+    padding: 15px 20px;
+    border-top: 1px solid #f0f0f0;
+    display: flex;
+    gap: 10px;
+    background: #fff;
+}
+
+.btn-user-action {
+    flex: 1;
+    padding: 8px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-decoration: none;
+    text-align: center;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: 0.2s;
+    border: none;
+}
+
+.btn-edit {
+    background: #E3F2FD;
+    color: #1565C0;
+}
+
+    .btn-edit:hover {
+        background: #1565C0;
+        color: white;
+    }
+
+.btn-create-acc {
+    background: #E8F5E9;
+    color: #2E7D32;
+}
+
+    .btn-create-acc:hover {
+        background: #2E7D32;
+        color: white;
+    }
+
+.btn-delete {
+    background: #FFEBEE;
+    color: #D32F2F;
+    max-width: 40px;
+}
+
+    .btn-delete:hover {
+        background: #D32F2F;
+        color: white;
+    }

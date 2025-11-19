@@ -1,0 +1,76 @@
+﻿@model QLQA_TH.Models.ViewModels.UserProfileViewModel
+
+@{
+    ViewData["Title"] = "Hồ sơ Quản trị viên";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<link href="~/css/profile.css" rel="stylesheet" />
+
+<div class="profile-container">
+    <div class="profile-card">
+        <div class="profile-header-bg"></div>
+
+        <div class="profile-body">
+            <!-- ĐIỀU CHỈNH AVATAR Ở ĐÂY --><div class="profile-avatar">
+                @if (!string.IsNullOrEmpty(Model.HinhAnh))
+                {
+                    <img src="@Model.HinhAnh" alt="Avatar Admin" />
+                }
+                else
+                {
+                    <img src="~/images/avatar-default.png" alt="Avatar Admin Mặc định" />
+                    @* Hoặc sử dụng icon nếu bạn không muốn dùng ảnh mặc định: *@
+                    @* <div style="width:100%; height:100%; border-radius:50%; background:#eee; display:flex; align-items:center; justify-content:center; color:#2E7D32; font-size:60px;">
+                        <i class="fa-solid fa-user-shield"></i>
+                    </div> *@
+                }
+            </div>
+
+            <div class="profile-identity">
+                <h1 class="profile-name">@Model.HoTen</h1>
+                <span class="profile-role bg-danger text-white">@Model.VaiTroHienThi</span>
+                <div class="text-muted mt-2">
+                    <i class="fa-regular fa-clock me-1"></i> Tham gia ngày: @Model.NgayTao.ToString("dd/MM/yyyy")
+                </div>
+            </div>
+
+            <hr class="mb-4" style="opacity: 0.1">
+
+            <div class="profile-info-grid">
+                <div class="info-column">
+                    <h5 class="text-success mb-3"><i class="fa-solid fa-address-card me-2"></i>Thông tin liên hệ</h5>
+                    <div class="info-group">
+                        <div class="info-label">Email</div>
+                        <div class="info-value">@(Model.Email ?? "Chưa cập nhật")</div>
+                    </div>
+                    <div class="info-group">
+                        <div class="info-label">Số điện thoại</div>
+                        <div class="info-value">@(Model.SDT ?? "Chưa cập nhật")</div>
+                    </div>
+                </div>
+
+                <div class="info-column">
+                    <h5 class="text-success mb-3"><i class="fa-solid fa-user-tag me-2"></i>Thông tin cá nhân</h5>
+                    <div class="info-group">
+                        <div class="info-label">Chức vụ</div>
+                        <div class="info-value">@(Model.ChucVu ?? "Quản trị hệ thống")</div>
+                    </div>
+                    <div class="info-group">
+                        <div class="info-label">Tên đăng nhập</div>
+                        <div class="info-value text-muted">@Model.TenTK</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="profile-actions">
+                <a href="#" class="btn-edit-profile">
+                    <i class="fa-solid fa-pen-to-square"></i> Cập nhật thông tin
+                </a>
+                <a href="#" class="btn btn-outline-secondary" style="border-radius: 8px;">
+                    <i class="fa-solid fa-key"></i> Đổi mật khẩu
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

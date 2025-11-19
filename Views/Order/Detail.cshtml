@@ -1,0 +1,192 @@
+﻿@model QLQA_TH.Models.ViewModels.OrderDetailViewModel
+
+@{
+    ViewData["Title"] = "Gọi Món - " + Model.Ban.TenBan;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<link href="~/css/searchBarStyle.css" rel="stylesheet" />
+<!-- Đảm bảo đã link đúng file CSS mới -->
+<link href="~/css/orderStyle.css?v=1" rel="stylesheet" />
+
+<div class="pos-container">
+    <!-- 1. MENU (TRÁI) -->
+    <div class="pos-menu-area">
+        <!-- Filter Bar -->
+        <div class="menu-filter-bar">
+            <a asp-action="Index" class="btn btn-light text-secondary border me-2" title="Đổi bàn">
+                <i class="fa-solid fa-arrow-left"></i>
+            </a>
+
+            <form asp-action="Detail" method="get" class="d-flex flex-grow-1 gap-2 align-items-center">
+                <input type="hidden" name="tableId" value="@Model.Ban.MaBan" />
+
+                <div class="custom-search-bar flex-grow-1">
+                    <input type="text" name="searchString" value="@Model.CurrentSearch" placeholder="Tìm món ăn nhanh..." />
+                    <button type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
+                </div>
+
+                <select name="categoryId" class="form-select w-auto border-0 bg-light fw-bold text-secondary" onchange="this.form.submit()">
+                    <option value="">-- Tất cả --</option>
+                    @foreach (var cat in Model.Categories)
+                    {
+                        bool isSelected = Model.CurrentCategory == cat.MaLoai;
+                        <option value="@cat.MaLoai" selected="@isSelected">@cat.TenLoai</option>
+                    }
+                </select>
+            </form>
+        </div>
+
+        <!-- Lưới Món Ăn -->
+        <div class="pos-menu-list">
+            <div class="row g-3">
+                @foreach (var mon in Model.MenuItems)
+                {
+                    <div class="col-6 col-md-4 col-lg-3">
+                        <div class="pos-product-card" onclick="updateCart(@Model.Ban.MaBan, @mon.MaMon, 1)">
+                            <!-- Ảnh -->
+                            <div class="pos-product-img-wrapper">
+                                <img src="@(string.IsNullOrEmpty(mon.HinhAnh) ? "/images/placeholder.png" : mon.HinhAnh)"
+                                     class="pos-product-img" alt="@mon.TenMon">
+                            </div>
+
+                            <!-- Nội dung -->
+                            <div class="pos-product-body">
+                                <div>
+                                    <div class="pos-product-title" title="@mon.TenMon">@mon.TenMon</div>
+                                    <div class="pos-product-price">@mon.Gia.ToString("N0") ₫</div>
+                                </div>
+
+                                <!-- SỬA LẠI CLASS Ở ĐÂY: btn-add-item (Thay vì btn-add-hover) -->
+                                <button class="btn-add-item">Thêm
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. GIỎ HÀNG (PHẢI) -->
+    <div class="pos-cart-area">
+        <div class="cart-header">
+            <div>
+                <h6 class="mb-0 fw-bold">@Model.Ban.TenBan</h6>
+                <small style="font-size: 0.75rem; opacity: 0.9">@(Model.Ban.SoGhe) Ghế</small>
+            </div>
+            <span class="badge bg-white text-success shadow-sm">Mới</span>
+        </div>
+
+        <div id="cartContent" class="d-flex flex-column flex-grow-1">
+            @await Html.PartialAsync("_CartPartial", Model)
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        var tableId = @Model.Ban.MaBan;
+
+        function updateCart(tblId, maMon, quantity) {
+            var url = quantity > 0 ? '/Order/AddToCart' : '/Order/DecreaseItem';
+            $.ajax({
+                url: url, type: 'POST', data: { tableId: tblId, maMon: maMon },
+                success: function (res) {
+                    if (res.success) reloadCart(tblId);
+                    else Swal.fire('Lỗi', res.msg, 'error');
+                }
+            });
+        }
+
+        function reloadCart(tblId) {
+            $.ajax({
+                url: '/Order/GetCartComponent?tableId=' + tblId, type: 'GET',
+                success: function (html) { $('#cartContent').html(html); }
+            });
+        }
+
+        function placeOrder(tblId) {
+            if ($('.cart-item').length === 0) {
+                Swal.fire('Thông báo', 'Vui lòng chọn món trước!', 'info');
+                return;
+            }
+
+            Swal.fire({
+                title: 'Gửi đơn xuống bếp?',
+                text: "Các món đã chọn sẽ được in phiếu chế biến.",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#2E7D32',
+                confirmButtonText: 'Xác nhận'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: '/Order/PlaceOrder', type: 'POST', data: { tableId: tblId },
+                        success: function (res) {
+                            if (res.success) {
+                                Swal.fire('Thành công', res.msg, 'success').then(() => reloadCart(tblId));
+                            } else Swal.fire('Lỗi', res.msg, 'error');
+                        }
+                    });
+                }
+            });
+        }
+
+        function cancelOrder(maHD) {
+            Swal.fire({
+                title: 'Hủy đơn hàng này?',
+                text: "Các món CHƯA LÀM sẽ bị hủy. Nếu tất cả đều chưa làm, bàn sẽ được trả.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Đồng ý Hủy',
+                cancelButtonText: 'Quay lại'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: '/Order/CancelOrder',
+                        type: 'POST',
+                        data: { maHD: maHD },
+                        success: function (res) {
+                            if (res.success) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Đã hủy!',
+                                    text: res.msg,
+                                    timer: 1500,
+                                    showConfirmButton: false
+                                }).then(() => {
+                                    if(res.msg.includes("trả bàn")) {
+                                        window.location.href = '/Order/Index';
+                                    } else {
+                                        reloadCart(tableId);
+                                    }
+                                });
+                            } else {
+                                Swal.fire('Không thể hủy', res.msg, 'error');
+                            }
+                        }
+                    });
+                }
+            });
+        }
+
+        function confirmServed(maPhieu) {
+            $.ajax({
+                url: '/Order/ConfirmServed',
+                type: 'POST',
+                data: { maPhieu: maPhieu },
+                success: function (res) {
+                    if (res.success) {
+                        reloadCart(tableId); // Tải lại để mất thông báo
+                    } else {
+                        Swal.fire('Lỗi', res.msg, 'error');
+                    }
+                }
+            });
+        }
+    </script>
+}
