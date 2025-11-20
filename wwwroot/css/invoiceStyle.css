@@ -1,0 +1,112 @@
+﻿
+body {
+    background-color: #f0f2f5;
+}
+
+/* --- CSS HÓA ĐƠN (FIX CỘT) --- */
+.invoice-paper {
+    background-color: #fff;
+    padding: 20px 25px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    font-family: 'Courier New', Courier, monospace;
+    color: #000;
+}
+
+.invoice-title {
+    text-align: center;
+    font-weight: bold;
+    font-size: 1.5rem;
+    margin-bottom: 15px;
+    text-transform: uppercase;
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9rem;
+    margin-bottom: 5px;
+}
+
+.dashed-line {
+    border-bottom: 1px dashed #000;
+    margin: 10px 0;
+}
+
+/* Căn chỉnh bảng món ăn */
+.invoice-table {
+    width: 100%;
+    font-size: 0.9rem;
+    border-collapse: collapse;
+    table-layout: fixed; /* Cố định layout */
+}
+
+/* Định nghĩa độ rộng cột chuẩn */
+.col-name {
+    width: 40%;
+    text-align: left;
+}
+
+.col-sl {
+    width: 15%;
+    text-align: center;
+}
+
+.col-gia {
+    width: 20%;
+    text-align: right;
+}
+
+.col-tien {
+    width: 25%;
+    text-align: right;
+}
+
+.invoice-table th {
+    padding-bottom: 8px;
+    font-weight: bold;
+    border-bottom: 1px dashed #000;
+}
+
+.invoice-table td {
+    padding: 8px 0;
+    vertical-align: top;
+}
+
+.total-row {
+    display: flex;
+    justify-content: space-between;
+    font-weight: bold;
+    font-size: 1.2rem;
+    margin: 15px 0;
+    align-items: center;
+}
+
+.invoice-footer {
+    text-align: center;
+    font-style: italic;
+    font-size: 0.85rem;
+    margin-top: 20px;
+    color: #555;
+}
+
+@media print {
+    body * {
+        visibility: hidden;
+    }
+
+    #invoiceToPrint, #invoiceToPrint * {
+        visibility: visible;
+    }
+
+    #invoiceToPrint {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        padding: 0;
+    }
+
+    .no-print {
+        display: none !important;
+    }
+}

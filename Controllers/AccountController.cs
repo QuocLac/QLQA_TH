@@ -152,6 +152,7 @@ namespace QLQA_TH.Controllers
                 return RedirectToAction("Login");
             }
 
+            // SỬA LẠI ĐOẠN NÀY: Dùng _context.Users thay vì _context.TaiKhoans
             var userInfo = await _context.Users
                 .Include(t => t.NhanVien)
                 .FirstOrDefaultAsync(t => t.Id == user.Id);
@@ -173,7 +174,10 @@ namespace QLQA_TH.Controllers
                 ChucVu = userInfo.NhanVien.ChucVu,
                 GioiTinhHienThi = userInfo.NhanVien.GioiTinh ? "Nam" : "Nữ",
                 NgaySinh = userInfo.NhanVien.NgaySinh,
-                DiaChi = userInfo.NhanVien.DiaChi
+                DiaChi = userInfo.NhanVien.DiaChi,
+
+                // Thêm HinhAnh nếu view cần dùng
+                HinhAnh = userInfo.NhanVien.HinhAnh
             };
 
             return View(model);

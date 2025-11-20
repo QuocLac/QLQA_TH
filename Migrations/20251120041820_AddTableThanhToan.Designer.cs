@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using QLQA_TH.Data;
 
@@ -11,9 +12,11 @@ using QLQA_TH.Data;
 namespace QLQA_TH.Migrations
 {
     [DbContext(typeof(QLQAContext))]
-    partial class QLQAContextModelSnapshot : ModelSnapshot
+    [Migration("20251120041820_AddTableThanhToan")]
+    partial class AddTableThanhToan
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

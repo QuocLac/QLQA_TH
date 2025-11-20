@@ -18,6 +18,7 @@ namespace QLQA_TH.Data
         public DbSet<DonHang> DonHangs { get; set; }
         public DbSet<DatBan> DatBans { get; set; }
         public DbSet<KhuyenMai> KhuyenMais { get; set; }
+        public DbSet<ThanhToan> ThanhToans { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -58,6 +59,13 @@ namespace QLQA_TH.Data
                 .WithMany()
                 .HasForeignKey(p => p.MaNV_PhucVu)
                 .OnDelete(DeleteBehavior.Restrict);
+
+
+            modelBuilder.Entity<ThanhToan>()
+                .HasOne(t => t.HoaDon)
+                .WithMany(h => h.ThanhToans)
+                .HasForeignKey(t => t.MaHD)
+                .OnDelete(DeleteBehavior.Cascade);
 
             // --- CẤU HÌNH CÁC BẢNG KHÁC ---
             modelBuilder.Entity<DonHang>().HasKey(dh => dh.MaChiTiet);

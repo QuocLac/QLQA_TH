@@ -1,0 +1,333 @@
+﻿@model QLQA_TH.Models.HoaDon
+@using System.Text.RegularExpressions;
+
+@{
+    ViewData["Title"] = "Thanh Toán #" + Model.MaHD;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var lastPayment = Model.ThanhToans.OrderByDescending(t => t.ThoiGian).FirstOrDefault();
+
+    decimal khachDua = 0;
+    decimal tienThua = 0;
+    string methodDisplay = "Chưa TT";
+
+    if (lastPayment != null)
+    {
+        methodDisplay = lastPayment.PhuongThuc;
+
+        // Nếu là Chuyển khoản -> Khách đưa = Tổng tiền, Thừa = 0
+        if (lastPayment.PhuongThuc.Contains("Chuyển khoản"))
+        {
+            khachDua = Model.ThanhTien;
+            tienThua = 0;
+        }
+        // Nếu là Tiền mặt -> Phải tách chuỗi GhiChu để lấy số tiền khách đưa
+        // Format lưu trong Controller: "Thu tay: 500000"
+        else
+        {
+            // Dùng Regex lấy tất cả số trong GhiChu
+            string ghiChu = lastPayment.GhiChu ?? "";
+            var match = Regex.Match(ghiChu, @"Thu tay:\s*(\d+)");
+            if (match.Success)
+            {
+                decimal.TryParse(match.Groups[1].Value, out khachDua);
+                tienThua = khachDua - Model.ThanhTien;
+                if (tienThua < 0) tienThua = 0;
+            }
+            else
+            {
+                // Fallback nếu không tìm thấy
+                khachDua = Model.ThanhTien;
+            }
+        }
+    }
+    else
+    {
+        // Nếu chưa thanh toán, mặc định khách đưa = tổng tiền để hiển thị đẹp
+        khachDua = Model.ThanhTien;
+    }
+
+    // --- CONFIG QR ---
+    string bankId = ViewBag.BankId ?? "";
+    string accountNo = ViewBag.AccountNo ?? "";
+    string accountName = ViewBag.AccountName ?? "";
+    string template = ViewBag.Template ?? "compact2";
+    string contentRaw = "HD" + Model.MaHD;
+    string qrUrl = $"https://img.vietqr.io/image/{bankId}-{accountNo}-{template}.png?amount={Model.ThanhTien}&addInfo={System.Net.WebUtility.UrlEncode(contentRaw)}&accountName={System.Net.WebUtility.UrlEncode(accountName)}";
+
+    bool canCheckout = ViewBag.CanCheckout ?? false;
+    bool daThanhToan = Model.TrangThaiHoaDon != 0;
+}
+
+<link href="~/css/invoiceStyle.css" rel="stylesheet" />
+
+<div class="container py-4">
+    <div class="mb-3 no-print">
+        <a asp-action="Index" class="btn btn-outline-secondary border-0">
+            <i class="fa-solid fa-arrow-left me-2"></i> Quay lại
+        </a>
+    </div>
+
+    <div class="row gx-5">
+        <div class="col-lg-5 mb-4">
+            <div class="invoice-paper" id="invoiceToPrint">
+                <div class="invoice-title">HÓA ĐƠN</div>
+                <div class="info-row">
+                    <span>Số: #@Model.MaHD</span>
+                    <span>@DateTime.Now.ToString("dd/MM HH:mm")</span>
+                </div>
+                <div class="info-row">
+                    <span>Bàn: <strong>@(Model.Ban?.TenBan ?? "Mang về")</strong></span>
+                    <span>TN: @(User.Identity?.Name ?? "Staff")</span>
+                </div>
+
+                <table class="invoice-table mt-3">
+                    <thead>
+                        <tr>
+                            <th class="col-name">Món</th>
+                            <th class="col-sl">SL</th>
+                            <th class="col-gia">Đ.Giá</th>
+                            <th class="col-tien">Tiền</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{
+                            var items = Model.PhieuDats.Where(p => p.TrangThai != 3)
+                            .SelectMany(p => p.DonHangs)
+                            .GroupBy(d => d.MaMon)
+                            .Select(g => new { Ten = g.First().MonAn.TenMon, SL = g.Sum(d => d.SoLuong), Gia = g.First().Gia, TT = g.Sum(d => d.SoLuong * d.Gia) });
+                        }
+                        @foreach (var item in items)
+                        {
+                            <tr>
+                                <td class="col-name">@item.Ten</td>
+                                <td class="col-sl">@item.SL</td>
+                                <td class="col-gia">@item.Gia.ToString("#,##0")</td>
+                                <td class="col-tien">@item.TT.ToString("#,##0")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+
+                <div class="dashed-line"></div>
+
+                <div class="total-row">
+                    <span>TỔNG CỘNG:</span> <span>@Model.ThanhTien.ToString("N0") ₫</span>
+                </div>
+
+                <div class="info-row mt-2">
+                    <span>Phương thức:</span>
+                    <span id="printMethod" class="fw-bold">@methodDisplay</span>
+                </div>
+                <div class="info-row">
+                    <span>Khách đưa:</span>
+                    <span id="printGiven">@khachDua.ToString("N0") ₫</span>
+                </div>
+                <div class="info-row">
+                    <span>Tiền thừa:</span>
+                    <span id="printChange">@tienThua.ToString("N0") ₫</span>
+                </div>
+
+                <div class="invoice-footer">
+                    <p class="mb-1">Cảm ơn quý khách!</p>
+                    <p>Wifi: NhaHangXanh / Pass: 12345678</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-7 no-print">
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-header bg-success text-white p-3">
+                    <h5 class="mb-0 fw-bold"><i class="fa-solid fa-wallet me-2"></i> Thanh Toán</h5>
+                </div>
+                <div class="card-body p-4">
+                    @if (!daThanhToan)
+                    {
+                        if (canCheckout)
+                        {
+                            <ul class="nav nav-pills mb-4 nav-fill bg-light p-1 rounded-pill">
+                                <li class="nav-item"><button class="nav-link active rounded-pill" data-bs-toggle="tab" data-bs-target="#cash-pane" onclick="setMethod('Tiền mặt')">TIỀN MẶT</button></li>
+                                <li class="nav-item"><button class="nav-link rounded-pill" data-bs-toggle="tab" data-bs-target="#transfer-pane" onclick="setMethod('Chuyển khoản')">CHUYỂN KHOẢN</button></li>
+                            </ul>
+
+                            <div class="tab-content">
+                                <div class="tab-pane fade show active" id="cash-pane">
+                                    <div class="text-center mb-4">
+                                        <h1 class="text-success fw-bold">@Model.ThanhTien.ToString("N0") ₫</h1>
+                                    </div>
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label class="fw-bold">Khách đưa:</label>
+                                            <input type="number" id="amountGiven" class="form-control fw-bold text-primary" value="@Model.ThanhTien" oninput="calculateChange()" />
+                                            <div class="mt-2">
+                                                <button class="btn btn-sm btn-outline-secondary" onclick="setAmount(@Model.ThanhTien)">Đủ</button>
+                                                <button class="btn btn-sm btn-outline-secondary" onclick="setAmount(200000)">200k</button>
+                                                <button class="btn btn-sm btn-outline-secondary" onclick="setAmount(500000)">500k</button>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="fw-bold">Tiền thừa:</label>
+                                            <input type="text" id="changeAmount" class="form-control fw-bold text-danger bg-white" readonly value="0" />
+                                        </div>
+                                    </div>
+                                    <button onclick="processManualPayment()" class="btn btn-success btn-lg w-100 mt-4 fw-bold">XÁC NHẬN</button>
+                                </div>
+
+                                <div class="tab-pane fade" id="transfer-pane">
+                                    <div id="qr-waiting" class="text-center">
+                                        <div class="alert alert-warning mb-3">
+                                            <div class="spinner-border spinner-border-sm me-2"></div> Đang chờ thanh toán...
+                                        </div>
+                                        <img src="@qrUrl" class="img-fluid border rounded mb-3" style="max-width: 280px;" />
+                                        <h4 class="text-primary fw-bold">@Model.ThanhTien.ToString("N0") ₫</h4>
+                                        <p>Nội dung: <span class="badge bg-warning text-dark">@contentRaw</span></p>
+                                        <div class="mt-4 border-top pt-3">
+                                            <button onclick="simulateWebhook()" class="btn btn-sm btn-outline-secondary"><i class="fa-solid fa-bug"></i> (Test) Giả lập Webhook</button>
+                                        </div>
+                                    </div>
+                                    <div id="qr-success" class="text-center d-none py-5">
+                                        <i class="fa-solid fa-circle-check text-success display-1 mb-3"></i>
+                                        <h3 class="fw-bold text-success">Thanh toán thành công!</h3>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="alert alert-danger text-center">
+                                <h4 class="fw-bold">CHƯA THỂ THANH TOÁN!</h4>
+                                <p>Món chưa phục vụ xong.</p>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="alert alert-success text-center">
+                            <h4><i class="fa-solid fa-check-circle"></i> Đã thanh toán</h4>
+                        </div>
+                        <button onclick="window.print()" class="btn btn-dark w-100 fw-bold"><i class="fa-solid fa-print"></i> In Hóa Đơn</button>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        const invoiceId = @Model.MaHD;
+        const totalAmount = @Model.ThanhTien;
+        let checkInterval = null;
+        let currentMethod = 'Tiền mặt';
+
+        function setMethod(method) {
+            currentMethod = method;
+            document.getElementById('printMethod').innerText = method;
+            if(method === 'Chuyển khoản') {
+                startPolling();
+                // Nếu chuyển khoản thì tiền khách đưa = tổng tiền (mặc định)
+                $('#printGiven').text(new Intl.NumberFormat('vi-VN').format(totalAmount) + ' ₫');
+                $('#printChange').text('0 ₫');
+            } else {
+                stopPolling();
+                calculateChange(); // Tính lại tiền thừa theo ô input
+            }
+        }
+
+        function calculateChange() {
+            let given = parseInt($('#amountGiven').val()) || 0;
+            let change = given - totalAmount;
+            if(change < 0) change = 0;
+
+            // Cập nhật giao diện UI bên phải
+            $('#changeAmount').val(new Intl.NumberFormat('vi-VN').format(change));
+
+            // Cập nhật tờ hóa đơn bên trái (REALTIME)
+            $('#printGiven').text(new Intl.NumberFormat('vi-VN').format(given) + ' ₫');
+            $('#printChange').text(new Intl.NumberFormat('vi-VN').format(change) + ' ₫');
+        }
+
+        function setAmount(amt) { $('#amountGiven').val(amt); calculateChange(); }
+
+        function processManualPayment() {
+            let given = parseInt($('#amountGiven').val()) || 0;
+            if(given < totalAmount) { Swal.fire('Lỗi', 'Tiền chưa đủ!', 'error'); return; }
+
+            Swal.fire({
+                title: 'Xác nhận?', text: `Thu tiền mặt: ${new Intl.NumberFormat('vi-VN').format(given)}đ`,
+                icon: 'question', showCancelButton: true, confirmButtonText: 'Thanh toán'
+            }).then((r) => {
+                if(r.isConfirmed) {
+                    // Cập nhật view lần cuối trước khi gửi
+                    calculateChange();
+
+                    $.ajax({
+                        url: '/Invoice/ConfirmPayment', type: 'POST',
+                        data: { maHD: invoiceId, amountGiven: given, paymentMethod: 'Tiền mặt' },
+                        success: function(res) {
+                            if(res.success) {
+                                Swal.fire('Xong!', '', 'success').then(() => {
+                                    window.print();
+                                    setTimeout(() => location.reload(), 500);
+                                });
+                            } else Swal.fire('Lỗi', res.msg, 'error');
+                        }
+                    });
+                }
+            });
+        }
+
+        function startPolling() {
+            if(checkInterval) clearInterval(checkInterval);
+            $('#qr-waiting').removeClass('d-none'); $('#qr-success').addClass('d-none');
+            checkInterval = setInterval(() => {
+                $.ajax({
+                    url: '/Invoice/CheckPaymentStatus', type: 'GET', data: { maHD: invoiceId },
+                    success: function(res) {
+                        if(res.paid) {
+                            stopPolling();
+                            $('#qr-waiting').addClass('d-none'); $('#qr-success').removeClass('d-none');
+                            document.getElementById('printMethod').innerText = res.method;
+                            Swal.fire({ icon: 'success', title: 'Đã nhận tiền!', timer: 2000, showConfirmButton: false })
+                            .then(() => { window.print(); setTimeout(() => location.reload(), 1000); });
+                        }
+                    }
+                });
+            }, 2000);
+        }
+        function stopPolling() { if(checkInterval) clearInterval(checkInterval); }
+
+                function simulateWebhook() {
+            // Lấy số nguyên từ Model
+            var amount = @Model.ThanhTien;
+
+            // Chuyển sang số thực để giả lập đúng dữ liệu SePay gửi
+            var amountToSend = parseFloat(amount);
+
+            var payload = {
+                content: "HD" + invoiceId,
+                transferAmount: amountToSend, // Gửi số, không gửi chuỗi
+                description: "Test Local",
+                id: "TEST-" + Date.now()
+            };
+
+            $.ajax({
+                url: '/api/PaymentWebhook/Receive',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(payload),
+                success: function(res) {
+                    if(res.success) Swal.fire('Thành công', 'Đã nhận tiền', 'success');
+                    else Swal.fire('Lỗi', res.message, 'error');
+                },
+                error: function(err) {
+                    Swal.fire('Lỗi ' + err.status, 'Kiểm tra Console', 'error');
+                }
+            });
+        }
+
+        window.onbeforeunload = () => stopPolling();
+        $(document).ready(() => calculateChange());
+    </script>
+}

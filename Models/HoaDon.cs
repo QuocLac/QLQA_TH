@@ -38,5 +38,8 @@ namespace QLQA_TH.Models
 
         // Danh sách các phiếu đặt (lượt gọi món) của hóa đơn này
         public virtual ICollection<PhieuDat> PhieuDats { get; set; } = new List<PhieuDat>();
+
+        // THÊM DÒNG NÀY: Lịch sử các lần thanh toán
+        public virtual ICollection<ThanhToan> ThanhToans { get; set; } = new List<ThanhToan>();
     }
 }
